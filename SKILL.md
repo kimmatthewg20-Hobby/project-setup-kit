@@ -1,17 +1,19 @@
 ---
 name: "project-setup"
-description: "Set up, update, check or explain one repo's toolkit (v5.2): Matt Pocock and Lauren Tan way of working plus Addy Osmani's guards, /feature and /fix flows from grill or bug report to commits, right-sized router plus Haiku Explore, normal or swarm mode (up to 5 agents in worktrees, drops to normal when plan usage runs low), /ship with real-app checks, a verify-app skill and a fresh-eyes doubt review on risky tickets, floor guard against silenced checks, session lock, daily /report, /webperf, secret scan, Kim as only git author, no PRs, push on 'I authorize', kit guide, Mac and cloud."
+description: "Set up, update, check or explain one repo's toolkit (v5.3), any stack (TypeScript, Rust, Python, Go): Matt Pocock and Lauren Tan way of working plus Addy Osmani's guards, /feature and /fix flows from grill or bug report to commits, right-sized router plus Haiku Explore, normal or swarm mode (up to 5 agents in worktrees, drops to normal when plan usage runs low), /deliver with real-app checks, a verify-app skill and a fresh-eyes doubt review on risky tickets, floor guard against silenced checks, session lock, daily /report, /webperf, secret scan, Kim as only git author, no PRs, push on 'I authorize', kit guide, Mac and cloud."
 ---
 
-# Project setup v5.2
+# Project setup v5.3
 
 One command gives a repo the toolkit. Everything installs INTO the repo; nothing global except this skill. Small files below plus Matt Pocock's skills; no orchestrator code. The way of working is Matt Pocock's (grill, spec, tickets, test-first build, two-axis review) with Lauren Tan's finish (proven on the real app, a mistake made twice becomes a check) and three guards from Addy Osmani (a fresh-eyes doubt review of risky tickets, framework code checked against the official docs, a floor guard that refuses silenced checks), fully automatic after Kim answers the grill or reports a bug.
+
+**Any stack.** The kit's own scripts are Node (Node 18+ is needed on every machine), but the checks follow the repo's stack: `scripts/check.mjs` finds package.json scripts, Rust (`Cargo.toml` or a Tauri app's `src-tauri/Cargo.toml`: cargo fmt, clippy with warnings as errors, test, build), Python (ruff, mypy or pyright, pytest) and Go (gofmt, go vet, go test, go build), and `.claude/kit.json` `"checks"` names any command it cannot guess. A full run with nothing to check fails instead of passing. The ratchet and the floor guard know the same four languages; git hooks use Husky in JS/TS repos and a plain `.githooks/` folder everywhere else; Playwright is for web screens only, and CLI or desktop apps get their own end-to-end check.
 
 The toolkit is committed, so the Mac, Windows and a cloud session at claude.ai/code (fresh clone) all have everything: CLAUDE.md, skills, workers, hooks, notes, specs. Only secrets and local state stay ignored. Needs a **private** repo.
 
 **Build mode** (stored in `.claude/kit.json`, chosen at Setup or Update):
-- **normal** (default): /ship builds one ticket at a time.
-- **swarm**: /ship and the Router run up to 5 workers at once (`maxAgents`), each on the model and effort its task needs and each in its own git worktree; their work comes home one ticket at a time, checked, reviewed and committed as Kim. Faster, and it spends plan usage about as many times faster as there are workers. **Usage guard:** before each batch /ship reads the plan usage the status line saved; at 5-hour use 80%+ or weekly 90%+ it drops to one ticket at a time by itself (2 at once from 60%), and a worker stopped by a usage limit switches the rest of the run to normal.
+- **normal** (default): /deliver builds one ticket at a time.
+- **swarm**: /deliver and the Router run up to 5 workers at once (`maxAgents`), each on the model and effort its task needs and each in its own git worktree; their work comes home one ticket at a time, checked, reviewed and committed as Kim. Faster, and it spends plan usage about as many times faster as there are workers. **Usage guard:** before each batch /deliver reads the plan usage the status line saved; at 5-hour use 80%+ or weekly 90%+ it drops to one ticket at a time by itself (2 at once from 60%), and a worker stopped by a usage limit switches the rest of the run to normal.
 
 ## What Kim gets
 
@@ -21,23 +23,23 @@ The kit guide (`.claude/KIT-GUIDE.md`, under Toolkit files) explains every part 
 |---|---|---|
 | Session | Sonnet medium, caveman replies; the router sends each prompt to the tier it needs; Haiku `Explore` only reads | settings, `Caveman` style, CLAUDE.md Router, `prompt.js` |
 | Quality | Lauren Tan's principles and Matt Pocock's habits (grill, glossary, TDD, deep modules, two-axis review) | CLAUDE.md `## How code is written`, Matt skills |
-| Flow | `/feature`: grill (Kim answers), then spec, tickets and /ship run by themselves. `/fix`: cause, failing test, fix, through /ship | `feature`, `fix` |
-| Build | `/ship`: check first, right-sized tier, green on the real app, review with a comments pass, commit as Kim | `ship`, 5 worker tiers |
+| Flow | `/feature`: grill (Kim answers), then spec, tickets and /deliver run by themselves. `/fix`: cause, failing test, fix, through /deliver | `feature`, `fix` |
+| Build | `/deliver`: check first, right-sized tier, green on the real app, review with a comments pass, commit as Kim | `deliver`, 5 worker tiers |
 | Swarm | Optional: up to 5 workers at once, each in its own worktree, collected and committed one ticket at a time | `.claude/kit.json`, `swarm.mjs`, Agent `isolation: "worktree"` |
-| Proof | Check red before the build, green after; `verify-<app>` drives the real app with evidence, created by /ship the first time | `verify-ticket`, Lauren's verification skills |
-| Doubt | Tier 3+ and risky tickets get a second review in a fresh context that sees only the diff and the contract, never the builder's claim (Addy Osmani) | `doubter` agent, `ship` |
+| Proof | Check red before the build, green after; `verify-<app>` drives the real app with evidence, created by /deliver the first time | `verify-ticket`, Lauren's verification skills |
+| Doubt | Tier 3+ and risky tickets get a second review in a fresh context that sees only the diff and the contract, never the builder's claim (Addy Osmani) | `doubter` agent, `deliver` |
 | Docs | Workers check framework code against the official docs for the installed version and list sources and UNVERIFIED items (Addy Osmani) | `worker-body.md` |
 | Learning | A mistake made twice becomes structure, a lint rule, a learned check or a test; `reflect`; learned routing | `learned-checks.mjs`, `reflect`, runs.log |
-| Never worse | Lint, typecheck, tests and learned checks block commits; the floor guard refuses a commit that silences a check, skips a test, drops assertions or switches a config off (unless the message names an exception); the ratchet reports the trend | `check.mjs`, `learned-checks.mjs`, `floor-guard.mjs`, `quality-ratchet.mjs`, `ci.yml` |
+| Never worse | Format, lint, typecheck, tests and learned checks block commits (whatever the stack: see Any stack); the floor guard refuses a commit that silences a check, skips a test, drops assertions or switches a config off (unless the message names an exception); the ratchet reports the trend | `check.mjs`, `learned-checks.mjs`, `floor-guard.mjs`, `quality-ratchet.mjs`, `ci.yml` |
 | Only Kim on GitHub | Identity set and checked, AI lines stripped, every pushed commit checked, CI author check, attribution off | `session.js`, `commit-identity.mjs`, `push-gate.mjs`, settings |
 | Safety | Guard (reads inside wrappers), push gate (git hook), secret scan, Mac sandbox (no unsandboxed retries, `.env` unreadable) | `guard.js`, `push-gate.mjs`, `secret-scan.mjs`, `settings.local.json` |
-| No prompts | Allow list, trash script, one check command, /ship in one turn | settings, `trash.mjs`, `check.mjs`, `ship` |
-| One session | A second Claude session on the same folder is announced; /ship, /feature and /fix wait for "go anyway" | `session.js`, `prompt.js`, SessionEnd hook |
+| No prompts | Allow list, trash script, one check command, /deliver in one turn | settings, `trash.mjs`, `check.mjs`, `deliver` |
+| One session | A second Claude session on the same folder is announced; /deliver, /feature and /fix wait for "go anyway" | `session.js`, `prompt.js`, SessionEnd hook |
 | Usage and reports | Status line shows plan usage and feeds the swarm usage guard; `/report` gives one page on shipped, blocked and debt; `/webperf` audits speed with honest numbers | `statusline.js`, `swarm.mjs usage`, `report`, `webperf` |
 | Every machine | Kit, plans and notes committed: Mac, Windows and cloud sessions share them | Git rules, `session.js` |
 
 **Matt skills (exact names):** `grill-with-docs grilling domain-modeling wayfinder research prototype to-spec to-tickets setup-matt-pocock-skills implement tdd code-review diagnosing-bugs improve-codebase-architecture codebase-design wait-what writing-for-agents`, plus setup-only `setup-pre-commit` (removed after use).
-**Never install:** `implement-spec`, `triage`, `pr`, `ask-matt`, `retro` (`reflect` covers it), Lauren Tan's `poteto-mode` and multi-model panels (one orchestrator: /ship), Addy Osmani's `agent-skills` plugin or its `/build auto` and persona commands (its best ideas are copied into this kit: doubt review, source-driven rule, floor guard, change sizing, Prove-It fixes, webperf), `git-guardrails-claude-code`, the `mattpocock-skills` plugin (plugins do not load in cloud sessions anyway), dependency-cruiser (misses TypeScript 7 files), Dependabot version updates (its bot opens PRs and becomes a second contributor), or any other orchestrator (e.g. the conductor kit).
+**Never install:** `implement-spec`, `triage`, `pr`, `ask-matt`, `retro` (`reflect` covers it), Lauren Tan's `poteto-mode` and multi-model panels (one orchestrator: /deliver), Addy Osmani's `agent-skills` plugin or its `/build auto` and persona commands (its best ideas are copied into this kit: doubt review, source-driven rule, floor guard, change sizing, Prove-It fixes, webperf), `git-guardrails-claude-code`, the `mattpocock-skills` plugin (plugins do not load in cloud sessions anyway), dependency-cruiser (misses TypeScript 7 files), Dependabot version updates (its bot opens PRs and becomes a second contributor), or any other orchestrator (e.g. the conductor kit).
 
 ## Modes
 
@@ -45,23 +47,25 @@ The kit guide (`.claude/KIT-GUIDE.md`, under Toolkit files) explains every part 
 
 A repo set up in local mode by an older kit (v3) switches to the committed kit on Update (step 5).
 
+Never type Anthropic's built-in `/ship` in a kit repo: it pushes and opens a pull request (the guard blocks both). The kit's ticket builder is `/deliver`.
+
 Toolkit files are protected by the guard. A message that starts with `/project-setup` (or `/anthropic-skills:project-setup`) unlocks them (the build mode in `.claude/kit.json` too), plus setting Kim's git identity, for 2 hours in that session; Kim's answers to setup questions keep it. It never unlocks push. A new session starts locked.
 **Unlock lost** (the first protected write of a setup or update is blocked): hooks older than v5.1 keep one shared unlock file, so a message in any other Claude session on this repo (a second desktop session, a cloud session) clears it; hooks older than v3.1 may not see the command at all. Change nothing and tell Kim in two lines: pause the other Claude sessions on this repo, then send the same command again with `I authorize` at the end. Then do Update step 0 first, before any question: its hooks keep one unlock per session, so other sessions no longer clear it.
 
 ## Preflight
 
 1. Repo root: `git rev-parse --show-toplevel`. Not a git repo: ask Kim before `git init`. Never run in the home folder.
-2. Need `git` and `node` 18+ with `npx`. Missing: say which, stop.
+2. Need `git` and `node` 18+ with `npx` (the kit's scripts and hooks are Node, also in a Rust, Python or Go repo), plus the stack's own toolchain (Rust: `cargo` with the `clippy` and `rustfmt` components; Python: the project's runner; Go: `go`). Missing: say which (`rustup component add clippy rustfmt` for the Rust components), stop.
 3. `git status --porcelain`: Kim's changed files. Never stage or edit them.
-4. Branch: stay on the current branch (no PRs in this workflow). If Kim has uncommitted changes in files setup must edit (`.gitignore`, `package.json`), ask him to commit or stash first.
+4. Branch: stay on the current branch (no PRs in this workflow). If Kim has uncommitted changes in files setup must edit (`.gitignore`, `package.json`, `.claude/kit.json`), ask him to commit or stash first.
 5. `gh repo view --json visibility -q .visibility` (if `gh` works). `PUBLIC`: stop and tell Kim that specs, notes and the codemap would be public; continue only if he makes the repo private or says so. Unknown: ask Kim to confirm the repo is private.
 6. Where am I: `CLAUDE_CODE_REMOTE=true` = cloud session (no sandbox file, no `.env`); else `uname` (`Darwin` = Kim's Mac).
 
 ## Setup
 
-**1. Scan (read-only).** Manifest and lockfile (package manager), framework, real scripts (dev, test, lint, typecheck, build, start), layout, `supabase/`, `vercel.json`, `.github/workflows/`, `.github/dependabot.yml`, existing `CLAUDE.md` / `AGENTS.md`, old kits (`.claude/skills/conductor`, `.conductor/`, `.claude/hooks/route.sh`, `worker-haiku.md`, `set-models.mjs`), whether the app has public pages and a sign-in.
+**1. Scan (read-only).** Manifests and lockfiles (`package.json`, `Cargo.toml` and `src-tauri/Cargo.toml`, `pyproject.toml` or `requirements.txt`, `go.mod`): every stack the repo has, its framework, real scripts and commands (dev, test, lint, typecheck, build, start; Rust: binaries in `src/main.rs`, `src/bin/` or `[[bin]]`, workspace members, a Tauri app), what kind of app it is (web, API, CLI, desktop, library), layout, `supabase/`, `vercel.json`, `.github/workflows/`, `.github/dependabot.yml`, existing `CLAUDE.md` / `AGENTS.md`, old kits (`.claude/skills/conductor`, `.conductor/`, `.claude/hooks/route.sh`, `worker-haiku.md`, `set-models.mjs`), whether the app has public pages and a sign-in.
 
-**2. Baseline check.** Run the existing typecheck, tests and build. Note pass/fail. If any fail, tell Kim: pre-commit and pre-push will only run the secret scan and learned checks until they are green, and "make typecheck/tests/build green" goes on the Debt list as High.
+**2. Baseline check.** Run the existing format check, lint, typecheck, tests and build for every stack (Rust: `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo build --workspace`). Note pass/fail. If any fail, tell Kim: pre-commit and pre-push will only run the secret scan and learned checks until they are green, and "make typecheck/tests/build green" goes on the Debt list as High.
 
 **3. Identity (Kim is the only author).** Find Kim's GitHub identity, best first:
 - `gh api user --jq '"\(.id)+\(.login)@users.noreply.github.com|\(.name // .login)"'` → the GitHub noreply email (always linked to his account, keeps his personal email private);
@@ -70,7 +74,9 @@ Show it and ask once: "Commit as `<name> <email>`?" (recommend the noreply one).
 
 **3b. Build mode.** The command named it (`/project-setup swarm` or `normal`): use that. Otherwise ask once: "Build mode: normal (one ticket at a time, lighter on usage, recommended) or swarm (up to 5 workers at once, each in its own worktree; faster, but usage goes up to 5 times faster)?" Write `.claude/kit.json` as `{"swarm": <true|false>, "maxAgents": 5, "usageGuard": {"normalAt5h": 80, "normalAt7d": 90, "smallAt5h": 60, "smallBatch": 2}}` (Kim may pick 2 to 5 agents; the usage guard numbers are plan-usage percentages).
 
-**4. Gitignore.** Normal ignores outside the block: `playwright-report/`, `test-results/`, `e2e/.auth/`. Then the block (replace an existing block in place, including an old `mode: local` one):
+**3c. Checks (every stack).** After step 11 wrote `scripts/check.mjs`, run `node scripts/check.mjs --list` and compare it with the scan. Any check the repo really has that the list misses or gets wrong (a Cargo feature flag, a workspace that needs `--all-features`, a Makefile or justfile target, a Python runner, a CLI end-to-end test), and every stack the script does not know (Java, .NET, Swift, Dart...): write it into `.claude/kit.json` as `"checks": {"<step>": "<command>"}` (steps: format, lint, typecheck, test, build, fix, e2e; `false` drops a found step; `test:rust` names one stack's step in a repo with two). Commands are split on spaces and run without a shell, so a pipe or `&&` needs a script under `scripts/`. A repo with no code at all (docs, config) gets `"allowNone": true` and the setup commit a `Floor-exception: config-loosened .claude/kit.json - repo has no code to check` line; anything else must list at least one format, lint, typecheck or test step, because `check.mjs` fails a run with nothing to check. Show Kim the final `--list` in the end report.
+
+**4. Gitignore.** Normal ignores outside the block: `playwright-report/`, `test-results/`, `e2e/.auth/` (web), `target/` (Rust), `.venv/`, `__pycache__/` (Python), only for the stacks the repo has. Then the block (replace an existing block in place, including an old `mode: local` one):
 ~~~~
 # >>> AI tooling (managed by project-setup v5)
 .env
@@ -87,7 +93,7 @@ CLAUDE.local.md
 
 **5. Old kits.** Conductor: ask, then `python3 ~/kits/conductor-kit/install.py --uninstall` if the kit exists, else remove `.claude/skills/conductor`, its agents, `conductor-*` hooks and settings entries, and the `conductor:begin`...`conductor:end` block. Earlier versions of this toolkit: delete `.claude/hooks/route.sh`, `.claude/agents/worker-haiku.md`, `.claude/tools/set-models.mjs`, `lighthouserc.json` and the CI `performance` job (if the kit wrote them). A `.github/dependabot.yml` with version updates: ask, then delete it (tell Kim to keep **Dependabot alerts** on in GitHub settings: alerts open no PRs).
 
-**6. CLAUDE.md.** Ask at most 5 questions, one at a time, recommended answer first; skip what the scan answers: what the app is for and who uses it; stack (default for new web apps: Next.js App Router, TypeScript strict, Supabase, Tailwind + shadcn/ui, Zod, Vercel); sensitive data; domain words; anything Claude must never touch. Write `CLAUDE.md` from the template at the end (existing file: edit in place, keep Kim's content, any `## Agent skills` block and any `## Learned rules`). Real commands only; `(none yet)` for missing ones. Under 200 lines and 20 KB.
+**6. CLAUDE.md.** Ask at most 5 questions, one at a time, recommended answer first; skip what the scan answers: what the app is for and who uses it; stack (default for new web apps: Next.js App Router, TypeScript strict, Supabase, Tailwind + shadcn/ui, Zod, Vercel; a Rust repo: what kind of app: CLI, web server, Tauri desktop app or library); sensitive data; domain words; anything Claude must never touch. Write `CLAUDE.md` from the template at the end (existing file: edit in place, keep Kim's content, any `## Agent skills` block and any `## Learned rules`). Real commands only; `(none yet)` for missing ones. Under 200 lines and 20 KB. `## Structure` and `## Rules` in the template are the web default: for another stack write that stack's own (the template shows the Rust lines) and drop the web lines that do not apply (Zod, RLS, server fetching).
 
 **7. Matt skills (project-level, copied):**
 ~~~~
@@ -97,40 +103,45 @@ Check all 18 are in `.claude/skills/`. A missing name was renamed upstream: `npx
 
 **8. Tracker and domain docs** (what `/setup-matt-pocock-skills` does, fixed choices: local markdown tracker, single-context domain, no triage labels): read `.claude/skills/setup-matt-pocock-skills/SKILL.md`, `issue-tracker-local.md`, `domain.md`; write `docs/agents/issue-tracker.md`, `docs/agents/domain.md` and the `## Agent skills` block in CLAUDE.md as that SKILL.md says.
 
-**9. Quality ratchet.** Copy `scripts/quality-ratchet.mjs`, run `node scripts/quality-ratchet.mjs --init --why`, show Kim the numbers and the architecture list (frozen as the baseline). The ratchet only reports: /ship writes its numbers to the health log and CI shows them; it never blocks a commit. The structure rules match `src/features/` and `src/components/ui/`; other layouts only get the cycle check until they move toward the target architecture.
+**9. Quality ratchet.** Copy `scripts/quality-ratchet.mjs`, run `node scripts/quality-ratchet.mjs --init --why`, show Kim the numbers and the architecture list (frozen as the baseline). The ratchet only reports: /deliver writes its numbers to the health log and CI shows them; it never blocks a commit. It reads TypeScript/JavaScript, Rust, Python and Go: file size, suppressions (`@ts-ignore`, `#[allow]`, `noqa`, `nolint`), escape hatches (`any`; Rust `.unwrap()`/`.expect()` outside tests and `unsafe` blocks; Python `Any`; Go `interface{}`), TODOs (and `todo!()`), files without a test (Rust: no `#[test]` in the file and no `tests/` file that names the module). The structure rules match `src/features/` and `src/components/ui/` in TypeScript; other layouts only get the cycle check until they move toward the target architecture, and Rust, Python and Go get no import-graph rules.
 
 **10. Codebase memory.**
 - `.claude/memory/health.md` from the template below: fill "Target architecture" from the scan (real layout, boundaries, data and auth model, one "Direction" line), the roadmap from Kim's answers, and the Debt list with anything step 2 found.
 - `.claude/memory/codemap.md`: write it yourself from the scan, one line per module or shared component/helper (what, where, public entry), under 150 lines.
 - Create an empty `.claude/memory/runs.log`.
 
-**11. Toolkit files.** Write every file under "Toolkit files" below exactly, **except the two settings files** (step 19 writes them last). Create folders (including `.claude/hooks/package.json`); `chmod +x` the four hooks. Then `node .claude/tools/apply-models.mjs` (must print `fable: on`, `workers written: 5` and `models set on 26 skills`). **Fable catcher**, three layers: (1) `fallbackModel` in settings moves an overloaded or down model to Opus, then Sonnet, by itself; (2) when Fable is missing from Kim's plan or needs usage credits he won't pay, the Router and /ship run `apply-models.mjs --no-fable` and redo the step on Opus; (3) the choice is saved in `.claude/models.json`, so it sticks across sessions, updates and cloud runs. Ask Kim once: "Does `/model` show Fable without 'Requires usage credits'?" No or unsure: run with `--no-fable` now (he can switch on later with `--fable`).
+**11. Toolkit files.** Write every file under "Toolkit files" below exactly, **except the two settings files** (step 19 writes them last). Create folders (including `.claude/hooks/package.json`); `chmod +x` the four hooks. Then `node .claude/tools/apply-models.mjs` (must print `fable: on`, `workers written: 5` and `models set on 26 skills`). **Fable catcher**, three layers: (1) `fallbackModel` in settings moves an overloaded or down model to Opus, then Sonnet, by itself; (2) when Fable is missing from Kim's plan or needs usage credits he won't pay, the Router and /deliver run `apply-models.mjs --no-fable` and redo the step on Opus; (3) the choice is saved in `.claude/models.json`, so it sticks across sessions, updates and cloud runs. Ask Kim once: "Does `/model` show Fable without 'Requires usage credits'?" No or unsure: run with `--no-fable` now (he can switch on later with `--fable`).
 
 **12. Prove the hooks:** `node .claude/tools/test-hooks.mjs` must print `hooks: all N passed` (300+ cases, in an ES-module repo: hooks load, reads never blocked, dangerous commands blocked also inside `bash -c`, `timeout`, `env` and one-line scripts, everyday commands allowed, push only on "I authorize", secrets, protected files, identity, setup unlock, rm turned into the trash script, session lock, status line). It runs in a throwaway copy, so it never touches this session's unlock. Any FAIL: stop, show Kim the lines, fix nothing by weakening the hooks. Then:
 - `node .claude/hooks/session.js` prints the git author line, and `git config user.email` equals identity.json.
 - `printf 'x\n\nCo-Authored-By: Claude <noreply@anthropic.com>\n' > /tmp/m && node scripts/commit-identity.mjs /tmp/m && cat /tmp/m` → trailer gone.
 - `node scripts/quality-ratchet.mjs --check` → exit `0`.
+- `node scripts/check.mjs --list` → shows at least one format, lint, typecheck or test step (step 3c).
 
-**13. Git hooks (JS/TS, ask; default yes).** Follow `.claude/skills/setup-pre-commit/SKILL.md` (Husky + lint-staged + Prettier + typecheck + tests). Then:
-- `.husky/pre-commit`: append `node scripts/secret-scan.mjs` and `node scripts/learned-checks.mjs` as the last two lines (the ratchet only reports, so it is not here).
+**13. Git hooks (ask; default yes).** JS/TS repo (has `package.json`): follow `.claude/skills/setup-pre-commit/SKILL.md` (Husky + lint-staged + Prettier + typecheck + tests); the lines below go in `.husky/`. Any other repo (Rust, Python, Go, or Rust with only a small web part): no Husky; write the same four hooks as plain files in `.githooks/` (each starts with `#!/bin/sh`, `chmod +x` them, git keeps the bit), with `.githooks/pre-commit` running `node scripts/check.mjs --only format,lint` first, then `git config core.hooksPath .githooks` (allowed during setup; `session.js` sets it again on every machine and fresh clone). A Tauri app with both: Husky, and its pre-commit also runs `node scripts/check.mjs --only format,lint` so the Rust side is checked too. Then:
+- `.husky/pre-commit` (or `.githooks/pre-commit`): append `node scripts/secret-scan.mjs` and `node scripts/learned-checks.mjs` as the last two lines (the ratchet only reports, so it is not here).
 - `.husky/commit-msg`: `node scripts/commit-identity.mjs "$1"` then `node scripts/floor-guard.mjs "$1"` (two lines). The floor guard reads only the lines this commit adds or removes, so old suppressions in the code never block; a finding that is right on purpose passes with a `Floor-exception: <rule> <path> - <reason>` line in the message.
 - `.husky/pre-push` (no PR gate, so this guards `main`): `node scripts/push-gate.mjs` then `node scripts/check.mjs` (two lines). The push gate is the hard lock: git runs it however a push was typed, it refuses a push from Claude Code (`CLAUDECODE=1`) without Kim's "I authorize", and it refuses any pushed commit not authored and committed by Kim or carrying an AI line.
-- `.husky/post-commit`: `node scripts/trash.mjs --empty --quiet || true` (empties `.trash/` after every commit: /ship tickets, plan commits from /to-spec, /to-tickets, /wayfinder, grills).
-If step 2 found failing checks, leave those commands out of pre-commit and add `--skip <steps>` to pre-push for now (Debt list says so). Make sure `package.json` has `"prepare": "husky"` so a fresh clone (cloud) turns the hooks on with the install.
+- `.husky/post-commit`: `node scripts/trash.mjs --empty --quiet || true` (empties `.trash/` after every commit: /deliver tickets, plan commits from /to-spec, /to-tickets, /wayfinder, grills).
+If step 2 found failing checks, leave those commands out of pre-commit and add `--skip <steps>` to pre-push for now (Debt list says so). With Husky, make sure `package.json` has `"prepare": "husky"` so a fresh clone (cloud) turns the hooks on with the install. Every hook path above is the same under `.githooks/`.
 
-**14. Playwright (web apps, ask; default yes).** `npm i -D @playwright/test`, `npx playwright install chromium`, write `playwright.config.ts` from below (adjust port and dev/start commands; keep the env-file loading and the short action timeouts), create `e2e/`. If the app has a sign-in: a **dev test account** (fake person, dev database only) read from `process.env.E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, never hard-coded. On the Mac they live in `.env.local`; in the cloud, in the environment variables (step 17).
+**14. End-to-end checks.** Pick by what a user touches:
+- **CLI (Rust):** `cargo add --dev assert_cmd predicates tempfile`, one integration test file `tests/cli.rs` with a module per command (run the real binary with args and stdin in a temp dir; check stdout, stderr, exit code and the files it writes), and `"checks": {"e2e": "cargo test --test cli"}` in `.claude/kit.json`. Other stacks: the same idea with their test runner.
+- **Library:** none; tests are the contract.
+- **Tauri desktop:** Playwright (below) against the web part's dev server for the screens (mock the Tauri `invoke` calls); the native shell is on Kim's TEST IT YOURSELF list (`tauri-driver` WebDriver works on Linux and Windows only, not on the Mac).
+- **Web screens (any backend, Rust servers included), ask; default yes:** `npm i -D @playwright/test`, `npx playwright install chromium`, write `playwright.config.ts` from below (adjust port and dev/start commands; keep the env-file loading and the short action timeouts), create `e2e/`. If the app has a sign-in: a **dev test account** (fake person, dev database only) read from `process.env.E2E_USER_EMAIL` / `E2E_USER_PASSWORD`, never hard-coded. On the Mac they live in `.env.local`; in the cloud, in the environment variables (step 17).
 
-**15. CI (ask; default yes when the repo is on GitHub).** Write `.github/workflows/ci.yml` from below, adapted to the package manager and real scripts. No Dependabot version updates, no PR rules.
+**15. CI (ask; default yes when the repo is on GitHub).** Write `.github/workflows/ci.yml` from below, adapted to the package manager and real scripts; keep only the jobs for stacks the repo has. Python or Go: add a job like the `rust` one (`actions/setup-python` or `actions/setup-go`, then the same commands as `node scripts/check.mjs --list`). Commands from `.claude/kit.json` `checks` go into the stack's job too. No Dependabot version updates, no PR rules.
 
 **16. Connectors (optional, ask).** `.mcp.json` (committed; holds no secrets): Supabase read-only scoped to the project ref, and Vercel: `{"mcpServers": {"supabase": {"type": "http", "url": "https://mcp.supabase.com/mcp?project_ref=<ref>&read_only=true"}, "vercel": {"type": "http", "url": "https://mcp.vercel.com"}}}`. Never write keys or tokens.
 
 **17. Cloud sessions (Kim does this once at claude.ai/code, only if he uses cloud sessions; give him these lines):**
 - **GitHub:** install the Claude GitHub App on this repo (or `/web-setup` from the Mac). Leave **Auto-fix** off: its PR replies are labeled as Claude.
 - **One environment per app** (environment selector → add, e.g. "DILP"), then pick it when starting a session:
-  - Network access: **Custom**, tick "Also include default list", add `cdn.playwright.dev`, `playwright.download.prss.microsoft.com`, `playwright.azureedge.net`.
+  - Network access: **Custom**, tick "Also include default list", add `cdn.playwright.dev`, `playwright.download.prss.microsoft.com`, `playwright.azureedge.net` (web). Rust needs `crates.io`, `index.crates.io`, `static.crates.io` and `static.rust-lang.org` (add them if the default list lacks them); Go `proxy.golang.org`, `sum.golang.org`; Python `pypi.org`, `files.pythonhosted.org`.
   - Environment variables: build and print the **Cloud env block** (section below) for Kim to paste; he types only the blank values. It holds `GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`, `GIT_COMMITTER_NAME`, `GIT_COMMITTER_EMAIL` = Kim's identity (a second lock on authorship that works even where repo hooks do not load), plus what the app needs against the **dev** database and the fake `E2E_USER_EMAIL` / `E2E_USER_PASSWORD`. Never a service-role key, never production. Anyone using the environment can read these, so keep it personal.
   - Desktop app: **New environment → Cloud tab** (the Local tab with Folders/Worktree is a different thing). Web: claude.ai/code → environment selector → New environment. Pick the branch (`main`) when starting each session, not here.
-  - Setup script (optional, cached, makes sessions faster): `npx -y playwright@latest install-deps chromium || true`. Everything else installs from `session.js`.
+  - Setup script (optional, cached, makes sessions faster): `npx -y playwright@latest install-deps chromium || true` (web). Rust, when the image has no `cargo`: `curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal -c clippy,rustfmt` (a Tauri app also needs `sudo apt-get install -y libwebkit2gtk-4.1-dev librsvg2-dev`). Everything else (packages, crates, git hooks) installs from `session.js`.
 - **Start a session:** select this repo, branch `main`, this environment. Only the pushed state arrives, so push from the Mac first ("push it, I authorize"). A session started from the Mac with `claude --cloud` also clones the pushed branch.
 - **Backup pushes (ask Kim once):** a cloud VM that sits idle can be reclaimed, and unpushed commits are then lost. Recommend `"cloudBackupPush": true` in `.claude/git.json`: lets a cloud session push only its own `claude/...` branch (never `main`, never force). Kim's "push only when I authorize" rule otherwise stays absolute. If his Vercel project builds previews for every branch, mention he can skip `claude/*` branches with Vercel's Ignored Build Step.
 - **Do not use Projects (threads) for this repo:** project threads load only CLAUDE.md, not the hooks, settings, skills or workers, and they open PRs. Use normal cloud sessions. If Kim uses Projects anyway, the environment's GIT_* variables still keep him the author; put "no pull requests; no AI attribution lines" in the project instructions.
@@ -142,14 +153,14 @@ If step 2 found failing checks, leave those commands out of pre-commit and add `
 - `.claude/settings.local.json` with the sandbox, **only on Kim's Mac** (never in a cloud session: the cloud VM is already isolated, and this file is never committed). Merge; keep allow rules Claude Code wrote there.
 Both must parse as JSON. From here on, the guard is live: a fresh setup has no unlock (its first message ran before the hooks existed), so do not write protected files after this step.
 
-**20. Verify:** 26 skills (17 Matt + `feature`, `fix`, `ship`, `verify-ticket`, `create-verification-skill`, `maintain-verification-skill`, `reflect`, `report`, `webperf`), `.claude/kit.json`, 5 workers + `Explore` + `doubter`, four hooks, `test-hooks.mjs`, `.claude/KIT-GUIDE.md`, the output style; step 12 passed; settings JSON valid; `git config user.email` = identity. `git ls-files --others --exclude-standard` lists the toolkit and nothing secret.
+**20. Verify:** 26 skills (17 Matt + `feature`, `fix`, `deliver`, `verify-ticket`, `create-verification-skill`, `maintain-verification-skill`, `reflect`, `report`, `webperf`), `.claude/kit.json`, 5 workers + `Explore` + `doubter`, four hooks, `test-hooks.mjs`, `.claude/KIT-GUIDE.md`, the output style; step 12 passed; settings JSON valid; `git config user.email` = identity. `git ls-files --others --exclude-standard` lists the toolkit and nothing secret.
 
 **21. Commit** on the current branch, explicit paths, one commit, as Kim:
-- `.gitignore`, `scripts/` (quality-ratchet, secret-scan, commit-identity, check, trash, swarm, push-gate, learned-checks, floor-guard, report `.mjs` and `learned-checks.json`), `quality-baseline.json`, and whichever exist of `playwright.config.ts`, `e2e/`, `.github/`, `.husky/`, `package.json`, the lockfile, the Prettier config; a deleted `.github/dependabot.yml`.
+- `.gitignore`, `scripts/` (quality-ratchet, secret-scan, commit-identity, check, trash, swarm, push-gate, learned-checks, floor-guard, report `.mjs` and `learned-checks.json`), `quality-baseline.json`, and whichever exist of `playwright.config.ts`, `e2e/`, `.github/`, `.husky/`, `.githooks/`, `package.json`, the lockfile, the Prettier config, `Cargo.toml`/`Cargo.lock` and `tests/cli.rs` (if step 14 added them); a deleted `.github/dependabot.yml`.
 - `CLAUDE.md`, `.claude/` (the gitignore keeps `settings.local.json` and `state/` out), `skills-lock.json`, `docs/agents/`, `.mcp.json`, and `.scratch/`, `GLOSSARY.md`, `docs/adr/` if they exist (specs, tickets and wayfinder maps must reach cloud sessions).
 Message `chore: dev tooling and Claude Code kit`. The secret scan runs on everything staged; a hit means stop and show Kim (never print the value). Never push.
 
-**22. Tell Kim (caveman, 12 lines max):** installed; **start a NEW session** (agents, hooks, output style and sandbox load at start); the flow is `/feature <idea>` (he answers the grill, the rest runs by itself), `/fix <bug>` for bugs, `/report` for the day; build mode normal or swarm and how to switch (`/project-setup update swarm` / `update normal`); commits are his (name/email), no AI lines, no PRs; push with "push it, I authorize" (pre-push checks first; pushing `main` deploys); web app: the first /ship writes `verify-<app>` by itself; cloud sessions: do step 17 once, then any cloud session on this repo has the full kit, plus every spec, ticket and map once pushed (moving between Mac and cloud: "push it, I authorize" on one, `git pull` on the other); Mac first-run sandbox note (a command that needs a website off the allowlist asks; approve once, then `/project-setup update` adds it); old history: earlier commits by other authors or with AI co-author lines still count on GitHub; the kit guide's section 11 has the clean-up Kim runs himself (history rewrite and force-push).
+**22. Tell Kim (caveman, 12 lines max):** installed; the checks this repo runs (`node scripts/check.mjs --list`, one line); **start a NEW session** (agents, hooks, output style and sandbox load at start); the flow is `/feature <idea>` (he answers the grill, the rest runs by itself), `/fix <bug>` for bugs, `/report` for the day; build mode normal or swarm and how to switch (`/project-setup update swarm` / `update normal`); commits are his (name/email), no AI lines, no PRs; push with "push it, I authorize" (pre-push checks first; pushing `main` deploys); web app: the first /deliver writes `verify-<app>` by itself; cloud sessions: do step 17 once, then any cloud session on this repo has the full kit, plus every spec, ticket and map once pushed (moving between Mac and cloud: "push it, I authorize" on one, `git pull` on the other); Mac first-run sandbox note (a command that needs a website off the allowlist asks; approve once, then `/project-setup update` adds it); old history: earlier commits by other authors or with AI co-author lines still count on GitHub; the kit guide's section 11 has the clean-up Kim runs himself (history rewrite and force-push).
 
 ## Update
 
@@ -168,8 +179,8 @@ Message `chore: dev tooling and Claude Code kit`. The secret scan runs on everyt
    - leftovers from old kits (conductor, git-guardrails);
    - `permissions.blockReadsOutsideWorkingDirectories: true` (makes pushes outside the sandbox prompt).
    - `ask` (or `deny`) rules on `rm`, `rmdir` or `Bash(rm *)`: deletes now go through `scripts/trash.mjs` (undoable until the next commit), and an ask rule prompts even in Bypass mode.
-   - `ask` rules on package installs (`npm install`, `npm i`, `pnpm add`, `yarn add`, `pip install` ...) and on `Edit(**/package.json)` or other manifest edits: they stop /ship mid-ticket in every mode (Kim wants /ship fully automatic). New dependencies are named in the /ship end report instead, and CI runs `npm audit`.
-8. **Shell and git hooks:** add the `## Shell commands` section from the CLAUDE.md template if missing (kit-owned: replace it in place, and drop an older `cd "<absolute path>" &&` bullet). Add `.trash/` to the `.gitignore` block. With Husky: write `.husky/post-commit`, set `.husky/pre-push` to `node scripts/push-gate.mjs` then `node scripts/check.mjs` (keep any `--skip` for checks still red), add `node scripts/learned-checks.mjs` to `.husky/pre-commit`, per Setup step 13.
+   - `ask` rules on package installs (`npm install`, `npm i`, `pnpm add`, `yarn add`, `pip install`, `cargo add`, `go get` ...) and on `Edit(**/package.json)`, `Edit(**/Cargo.toml)` or other manifest edits: they stop /deliver mid-ticket in every mode (Kim wants /deliver fully automatic). New dependencies are named in the /deliver end report instead, and CI runs `npm audit`.
+8. **Shell and git hooks:** a repo without `package.json` and without git hooks (an older kit skipped them for non-JS repos): Setup step 13 with `.githooks/`. Add the `## Shell commands` section from the CLAUDE.md template if missing (kit-owned: replace it in place, and drop an older `cd "<absolute path>" &&` bullet). Add `.trash/` to the `.gitignore` block. With Husky: write `.husky/post-commit`, set `.husky/pre-push` to `node scripts/push-gate.mjs` then `node scripts/check.mjs` (keep any `--skip` for checks still red), add `node scripts/learned-checks.mjs` to `.husky/pre-commit`, per Setup step 13.
    **Learned rules:** each line under `## Learned rules` in CLAUDE.md that a code pattern can catch becomes a lint rule, a test or a learned check (`node scripts/learned-checks.mjs --add ... --grandfather`), and the line then names it; report which ones stayed prose.
 9. Memory files exist (create missing ones from the templates). **CLAUDE.md size:** every session and every worker loads it, so over 20 KB (or lines over 400 characters) slows and muddles every run. Move feature notes and history (dated notes, ticket numbers, long Gotchas, Decisions and Don't-touch entries) word for word into `docs/agents/notes.md` (one `## <area>` per topic), and leave in CLAUDE.md the short lasting rules plus the pointer line from the template. A lossless move needs no OK; report the size before and after. Then the CLAUDE.md audit against a fresh scan (stale commands, wrong paths, contradictions, over 200 lines, Router, Git and Learned rules present): propose those edits; apply after Kim OKs.
    **Playwright:** in an existing `playwright.config.*` add what is missing from the template: `expect: { timeout: 5_000 }`, `actionTimeout: 10_000`, `navigationTimeout: 20_000` (a click on a disabled field then fails in 10 s with a clear message instead of waiting out the whole test), and the `process.loadEnvFile` lines for the files the e2e logins come from (if the config or docs say `set -a; . ./<file>`, load that file this way instead, so plain commands work).
@@ -178,17 +189,26 @@ Message `chore: dev tooling and Claude Code kit`. The secret scan runs on everyt
 11. **v5 clean-up** (does the v4 one too for older kits):
    - Build mode: `update swarm` / `update normal` sets it; no `.claude/kit.json` yet: ask the Setup step 3b question. Add `.claude/worktrees/` to the `.gitignore` block.
    - The proof gate is gone: delete the `node scripts/proof-gate.mjs "$1"` line from `.husky/commit-msg` and the `node scripts/quality-ratchet.mjs` line from `.husky/pre-commit`, then `node scripts/trash.mjs scripts/prove.mjs scripts/proof-gate.mjs`. Old `## Proof` blocks and `→ proof:` notes in tickets stay; they do no harm.
-   - Write the new kit files (`feature` skill, `swarm.mjs`, the new `ship`, `verify-ticket` and KIT-GUIDE) and re-run `node .claude/tools/apply-models.mjs` (it also drops an old `worker-sonnet-high`; step 12 checks the skill count).
+   - Write the new kit files (`feature` skill, `swarm.mjs`, the new `deliver`, `verify-ticket` and KIT-GUIDE) and re-run `node .claude/tools/apply-models.mjs` (it also drops an old `worker-sonnet-high`; step 12 checks the skill count).
    - Matt skills `wait-what` or `writing-for-agents` missing: Setup step 7 with just those names. `lighthouserc.json` or a CI `performance` job the kit wrote: delete them (ask if Kim changed them).
    - CLAUDE.md: replace the kit-owned sections with the template's (`## How code is written`, `## Safety`, `## Shell commands`, `## Git`, `## Router`, `## Planning cares about the long term`, `## How we work`) and the ratchet part of `## Commands`; keep Kim's Stack, Commands, Structure, Rules, Learned rules and Domain words. An older kit line that says the ratchet may only improve or must never be weakened is kit text, not Kim's rule: replace it with `Never weaken lint, typecheck, tests or learned checks to get green; the ratchet reports the trend.` (Kim chose a report-only ratchet in v5; do not keep it blocking).
    - Check finds other authors or AI lines in history: point Kim to section 11 of the kit guide.
 
 12. **v5.2 additions** (Addy Osmani's ideas, copied, no plugin):
-   - Write the `fix`, `report` and `webperf` skills, the `doubter` agent, the new `ship`, `feature`, `worker-body.md`, `check.mjs` and KIT-GUIDE, then re-run `node .claude/tools/apply-models.mjs` (must print `models set on 26 skills`; workers now get WebFetch and WebSearch for the docs rule).
+   - Write the `fix`, `report` and `webperf` skills, the `doubter` agent, the new `deliver`, `feature`, `worker-body.md`, `check.mjs` and KIT-GUIDE, then re-run `node .claude/tools/apply-models.mjs` (must print `models set on 26 skills`; workers now get WebFetch and WebSearch for the docs rule).
    - `.husky/commit-msg`: add `node scripts/floor-guard.mjs "$1"` after the commit-identity line (Setup step 13). Only new lines are checked, so existing suppressions never block; tell Kim in one line that a commit silencing a check now needs a `Floor-exception:` line.
    - Settings (step 19, last): the SessionEnd hook and `statusLine` from the template (Kim's own user status line: tell him the kit's one replaces it in this repo).
    - `.claude/kit.json`: add the `usageGuard` defaults from Setup step 3b if missing (keep `swarm` and `maxAgents`).
    - CLAUDE.md: replace the kit-owned sections with the template's again (Router has the `fix` row, `## How code is written` the docs and no-silencing lines, Planning the ticket size).
+
+13. **v5.3 additions** (any stack):
+   - **`/ship` is now `/deliver`.** Anthropic added its own `/ship` to Claude Code (Claude Ship, November 2026: it pushes, opens a pull request, reviews and approves it). Built-in commands win a name clash, so the kit's ticket builder is renamed: write `.claude/skills/deliver/`, then `node scripts/trash.mjs .claude/skills/ship`, re-run `node .claude/tools/apply-models.mjs` (still 26 skills), and replace `/ship` with `/deliver` in CLAUDE.md and in `docs/agents/notes.md`. Tell Kim in one line: type `/deliver`, never `/ship`, in kit repos (Anthropic's `/ship` would try a push and a PR; the guard blocks both without "I authorize", and PRs always).
+   - Write the new `check.mjs`, `quality-ratchet.mjs`, `floor-guard.mjs`, `guard.js`, `session.js`, `test-hooks.mjs`, `deliver`, `verify-ticket`, `create-verification-skill` and KIT-GUIDE; `node .claude/tools/test-hooks.mjs` must pass.
+   - Setup step 3c: `node scripts/check.mjs --list`, then fill `.claude/kit.json` `checks` for anything it misses. A repo whose old `check.mjs` found nothing to run (a Rust, Python or Go repo) was passing with no checks at all: tell Kim in one line, run the full check, and put anything red on the Debt list as High (with `--skip` in pre-push until green, as in Setup step 13).
+   - CI: an existing `ci.yml` with a job-level `if: ${{ hashFiles(...) }}` (older templates put one on the e2e job): GitHub does not offer hashFiles at job level, so the workflow fails to load. Remove that line and delete the jobs for stacks the repo lacks (Setup step 15). Say in one line if Kim's CI was broken by it.
+   - Rust repos: Setup step 4 (`target/`), step 13 (`.githooks/` if there is no Husky), step 14 (CLI end-to-end tests), step 15 (the `rust` CI job). `node scripts/quality-ratchet.mjs --report` shows the new Rust numbers; the next tightening records them, nothing is reset.
+   - Settings (step 19, last): add the new `permissions.allow` entries and sandbox domains and paths from the templates (merge, keep Kim's).
+   - CLAUDE.md: replace `## How code is written` with the template's again (silencing line names `#[allow]` and `#[ignore]`); for a non-web repo, rewrite `## Structure` and `## Rules` for its stack (Setup step 6).
 
 ## Cloud env block (`cloud-env` mode; Setup step 17; Update step 10)
 
@@ -206,7 +226,7 @@ Read `.claude/KIT-GUIDE.md` (no file in the repo: use the copy under Toolkit fil
 
 ## Check (read-only)
 
-Short table: `.gitignore` block is the kit's (has `.claude/worktrees/`; a `mode: local` block = FIX, Update step 5); skills vs list; model headers (`grep -l "^model:" .claude/skills/*/SKILL.md`); 5 workers + `Explore` + `doubter`; `verify-<app>` skill present (web apps); `.claude/git.json` cloudBackupPush value; `.claude/KIT-GUIDE.md` present and current; cloud mode: env names in code vs `.claude/cloud-env.example` (new ones listed), and in a cloud session the missing env names (Cloud env block step 6); four hooks, `.claude/hooks/package.json` and `node .claude/tools/test-hooks.mjs` (must pass; it first proves the hooks load); `scripts/trash.mjs`, `scripts/check.mjs`, `scripts/swarm.mjs`, `.husky/post-commit`, `.trash/` ignored, `scripts/push-gate.mjs` first in `.husky/pre-push`, no `proof-gate.mjs` left in commit-msg (FIX: Update step 11), `scripts/floor-guard.mjs` in commit-msg (FIX: Update step 12), `statusLine` and the SessionEnd hook in settings, `node scripts/swarm.mjs usage` (usage numbers fresh, or why not), other open sessions (`ls .claude/state/sessions`), `scripts/learned-checks.mjs` in pre-commit and `node scripts/learned-checks.mjs --list`; build mode (`.claude/kit.json`) and leftover worktrees (`node scripts/swarm.mjs list`); `## Shell commands` in CLAUDE.md; CLAUDE.md size (over 20 KB = FIX); Playwright action timeouts and env-file loading; Fable on/off (`.claude/models.json`) and `fallbackModel` set; conflicting rules from Update step 7 (CONFLICT); settings: attribution hidden, sandbox in `settings.local.json` (Mac) with `allowUnsandboxedCommands: false` and `.env` in `denyRead`; identity file vs `git config user.email`; git hooks active (`git config core.hooksPath`); output style; kit files tracked by git; `node scripts/quality-ratchet.mjs --check --why`; memory files and health log date; authors in history (`git log --format='%an <%ae>' | sort | uniq -c`) and AI lines (`git log --format=%B | grep -ciE 'co-authored-by:.*(claude|anthropic)|claude-session'`) - report, never rewrite (point Kim to kit guide section 11); any "never install" skill, Dependabot version updates or old kit (CONFLICT); leftovers in `~/.claude/skills` (ignore `synced/` and this skill) or user-scope plugins in `claude plugin list`.
+Short table: `.gitignore` block is the kit's (has `.claude/worktrees/`; a `mode: local` block = FIX, Update step 5); skills vs list; model headers (`grep -l "^model:" .claude/skills/*/SKILL.md`); 5 workers + `Explore` + `doubter`; `verify-<app>` skill present (web apps); `.claude/git.json` cloudBackupPush value; `.claude/KIT-GUIDE.md` present and current; cloud mode: env names in code vs `.claude/cloud-env.example` (new ones listed), and in a cloud session the missing env names (Cloud env block step 6); four hooks, `.claude/hooks/package.json` and `node .claude/tools/test-hooks.mjs` (must pass; it first proves the hooks load); `node scripts/check.mjs --list` (at least one format, lint, typecheck or test step; a stack in the repo with no steps = FIX, Setup step 3c), `scripts/trash.mjs`, `scripts/swarm.mjs`, `.husky/post-commit` (or `.githooks/post-commit` with `core.hooksPath` = `.githooks`), `.trash/` ignored, `scripts/push-gate.mjs` first in `.husky/pre-push`, no `proof-gate.mjs` left in commit-msg (FIX: Update step 11), `scripts/floor-guard.mjs` in commit-msg (FIX: Update step 12), `statusLine` and the SessionEnd hook in settings, `node scripts/swarm.mjs usage` (usage numbers fresh, or why not), other open sessions (`ls .claude/state/sessions`), `scripts/learned-checks.mjs` in pre-commit and `node scripts/learned-checks.mjs --list`; build mode (`.claude/kit.json`) and leftover worktrees (`node scripts/swarm.mjs list`); `## Shell commands` in CLAUDE.md; CLAUDE.md size (over 20 KB = FIX); Playwright action timeouts and env-file loading; Fable on/off (`.claude/models.json`) and `fallbackModel` set; conflicting rules from Update step 7 (CONFLICT); settings: attribution hidden, sandbox in `settings.local.json` (Mac) with `allowUnsandboxedCommands: false` and `.env` in `denyRead`; identity file vs `git config user.email`; git hooks active (`git config core.hooksPath`); output style; kit files tracked by git; `node scripts/quality-ratchet.mjs --check --why`; memory files and health log date; authors in history (`git log --format='%an <%ae>' | sort | uniq -c`) and AI lines (`git log --format=%B | grep -ciE 'co-authored-by:.*(claude|anthropic)|claude-session'`) - report, never rewrite (point Kim to kit guide section 11); any "never install" skill, Dependabot version updates or old kit (CONFLICT); leftovers in `~/.claude/skills` (ignore `synced/` and this skill) or user-scope plugins in `claude plugin list`.
 
 ## Rules
 
@@ -217,8 +237,8 @@ Per project only; never edit `~/.claude/` (except reading it in Check). Never wr
 `.claude/hooks/guard.js`
 ~~~~js
 #!/usr/bin/env node
-// PreToolUse guard (project-setup v5.2). Exit 2 = block (stderr goes to Claude). Exit 0 = allow.
-// - Never: force push, hard reset, deploys, live database, opening PRs, printing secrets.
+// PreToolUse guard (project-setup v5.3). Exit 2 = block (stderr goes to Claude). Exit 0 = allow.
+// - Never: force push, hard reset, deploys, publishing packages, live database, opening PRs, printing secrets.
 // - Push: only when Kim's current message says "I authorize".
 // - Protected toolkit files: only with "I authorize" or during a /project-setup run.
 // - Git identity: may only be set to Kim's own (.claude/identity.json), except during a /project-setup run.
@@ -255,7 +275,7 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
   const PROTECTED = [/(^|\/)\.claude\/hooks\//, /(^|\/)\.claude\/settings(\.local)?\.json$/, /(^|\/)\.claude\/state(\/|$)/,
     /(^|\/)\.claude\/(identity|git|kit)\.json$/, /(^|\/)quality-baseline\.json$/,
     /(^|\/)scripts\/(quality-ratchet|commit-identity|secret-scan|check|trash|swarm|learned-checks|push-gate|floor-guard|report)\.mjs$/,
-    /(^|\/)scripts\/learned-checks\.json$/, /(^|\/)\.husky(\/|$)/];
+    /(^|\/)scripts\/learned-checks\.json$/, /(^|\/)\.husky(\/|$)/, /(^|\/)\.githooks(\/|$)/];
   const isProtected = p => PROTECTED.some(re => re.test(String(p).replace(/\\/g, '/').replace(/^['"]|['"]$/g, '')));
   const lockedMsg = 'Kim unlocks it with "I authorize" or /project-setup.';
   const ENV_FILE = /(^|[\s'"=:(,\/])\.env(?!\.example\b)(\.[\w*.-]*|\*)?(?=$|[\s'"),;|&])/;
@@ -325,6 +345,8 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
     if (/^gh\s+pr\s+(create|merge|ready|reopen|edit)\b/.test(s) || /^gh\s+api\b.*\bpulls\b/.test(s))
       block('opening or merging a pull request. This workflow has no PRs: commit, then push on "I authorize".');
     if (/^rm\s+-\w*r\w*\s+(\/|~\/?|\$HOME\/?)(\s|$)/.test(s)) block('deleting the root or home folder.');
+    if (/^(cargo(\s+\+\S+)?\s+(publish|yank|owner)\b(?!.*--dry-run)|(npm|pnpm)\s+(publish|unpublish|deprecate|dist-tag)\b(?!.*--dry-run)|yarn\s+(npm\s+)?publish\b|twine\s+upload\b|(uv|poetry|flit|hatch)\s+publish\b|gh\s+release\s+(create|upload|delete|edit)\b)/.test(s))
+      block('publishing a package or a release. Kim does this himself.');
   }
 
   // 2) Secrets: no .env reads, no printing secret variables, no environment dumps.
@@ -389,7 +411,7 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
     for (const s of split(noHeredoc)) {
       const m = s.match(/^(?:cd|pushd)\s+(['"]?)(.+?)\1$/);
       const dir = m && m[2].replace(/\\/g, '/').replace(/\/+$/, '');
-      if (dir && writesAny && /(^|\/)(\.claude|\.husky|scripts)(\/|$)/.test(dir)) fail(`${dir} (cd into a kit folder, then write)`);
+      if (dir && writesAny && /(^|\/)(\.claude|\.husky|\.githooks|scripts)(\/|$)/.test(dir)) fail(`${dir} (cd into a kit folder, then write)`);
     }
     for (const s of split(noHeredoc)) {
       const w = words(s.replace(/^(sudo\s+|\S+=\S*\s+)*/, ''));
@@ -458,7 +480,7 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
 //   setupAt     - Kim started /project-setup: protected edits + identity setup for 2 hours in this session, so his
 //                 answers to setup questions do not cancel it
 // Session lock: refreshes this session's note in .claude/state/sessions/ and, while another Claude session is open on
-// this folder, says so once and makes /ship, /feature and /fix wait until Kim says "go anyway".
+// this folder, says so once and makes /deliver, /feature and /fix wait until Kim says "go anyway".
 // Then prints the one-line Router reminder.
 const fs = require('fs');
 const path = require('path');
@@ -506,16 +528,16 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
       .filter(s => s.session && s.session !== session && now - (s.seenAt || 0) < 3 * 60 * 60 * 1000);
     if (/\bgo anyway\b/i.test(text)) mine.goAnyway = true;
     const fresh = others.filter(o => !(mine.warned || []).includes(o.session));
-    const build = /(^\s*\/(?:[\w-]+:)?|<command-name>\s*\/?(?:[\w-]+:)?)(ship|feature|fix)\b/i.test(text);
+    const build = /(^\s*\/(?:[\w-]+:)?|<command-name>\s*\/?(?:[\w-]+:)?)(deliver|feature|fix)\b/i.test(text);
     if (others.length && !mine.goAnyway && (fresh.length || build))
-      lock.push(`Session lock: another Claude session is open on this folder. ${build ? 'Do not start ship, feature or fix: ' : ''}Tell Kim in one line to close the other session, or to say "go anyway" (two sessions in one folder edit the same files and mix commits).`);
+      lock.push(`Session lock: another Claude session is open on this folder. ${build ? 'Do not start deliver, feature or fix: ' : ''}Tell Kim in one line to close the other session, or to say "go anyway" (two sessions in one folder edit the same files and mix commits).`);
     mine.warned = [...new Set([...(mine.warned || []), ...others.map(o => o.session)])];
     fs.writeFileSync(mineFile, JSON.stringify({ ...mine, session, seenAt: now }));
   } catch {}
 
   let kit = {};
   try { kit = JSON.parse(fs.readFileSync(path.join(root, '.claude/kit.json'), 'utf8')); } catch {}
-  const swarm = kit.swarm === true ? ` Swarm mode: independent jobs run on up to ${kit.maxAgents || 5} workers at once, each in its own worktree (ship skill > Swarm mode).` : '';
+  const swarm = kit.swarm === true ? ` Swarm mode: independent jobs run on up to ${kit.maxAgents || 5} workers at once, each in its own worktree (deliver skill > Swarm mode).` : '';
   const lines = [...lock, `Router: pick the route for this prompt from CLAUDE.md > Router (the tier the task needs; big reads go to Explore; a new feature goes to the feature skill, a bug to the fix skill; move up a tier only after an unexpected failure). State it in one line.${swarm}`];
   if (authorize) lines.push('Kim authorized git push (no force) and protected-file edits for this message only.');
   if (setup) lines.push('Protected toolkit files are unlocked for this /project-setup run (2 hours, this session). Never push during setup.');
@@ -526,11 +548,12 @@ process.stdin.on('data', d => (raw += d)).on('end', () => {
 `.claude/hooks/session.js`
 ~~~~js
 #!/usr/bin/env node
-// SessionStart hook (project-setup v5.2). Runs on Kim's Mac and in cloud sessions.
+// SessionStart hook (project-setup v5.3). Runs on Kim's Mac and in cloud sessions.
 // 1) Every commit in this repo is authored by Kim (.claude/identity.json), never by Claude.
 // 2) Session lock: notes this session in .claude/state/sessions/ and warns when another Claude session is open
 //    on the same folder. `session.js --end` (SessionEnd hook) removes the note again.
-// 3) Cloud only: install what the repo needs (dependencies, git hooks, Playwright browser). Safe to re-run.
+// 3) Git hooks in .githooks/ (repos without Husky): point git at them on every machine; a fresh clone has them off.
+// 4) Cloud only: install what the repo needs (npm packages, Rust crates, Go modules, git hooks, Playwright browser). Safe to re-run.
 // Whatever it prints becomes context for Claude at the start of the session.
 const fs = require('fs');
 const path = require('path');
@@ -584,25 +607,51 @@ if (tracked) {
   if (pending.length) out.push(`Uncommitted plans/notes (${pending.length}): ${pending.slice(0, 8).map(l => l.slice(3)).join(', ')}${pending.length > 8 ? ', ...' : ''}. Commit them before other work: \`git add .scratch .claude/memory CLAUDE.md GLOSSARY.md docs/adr docs/agents\` (only paths that exist), then \`git commit -m "plan: save plans and notes"\`.`);
 }
 
-// 3) Cloud: dependencies, git hooks, Playwright browser.
-if (cloud && has('package.json')) {
-  const pm = has('pnpm-lock.yaml') ? ['pnpm', ['install', '--frozen-lockfile']]
-    : has('yarn.lock') ? ['yarn', ['install', '--frozen-lockfile']]
-    : has('package-lock.json') ? ['npm', ['ci', '--no-audit', '--no-fund']]
-    : ['npm', ['install', '--no-audit', '--no-fund']];
-  if (!has('node_modules')) {
-    const r = run(pm[0], pm[1], 480000);
-    out.push(r.status === 0 ? `Cloud: installed dependencies (${pm[0]}).`
-      : `Cloud: dependency install FAILED (${pm[0]} exit ${r.status}). Run it yourself and read the error: ${String(r.stderr).slice(-300)}`);
-  } else {
-    out.push('Cloud: dependencies already installed.');
+// 3) .githooks/ is the kit's hook folder in repos without Husky. core.hooksPath is local config, so every clone needs it set.
+if (has('.githooks') && !has('.husky')) {
+  const cur = String(run('git', ['config', '--get', 'core.hooksPath']).stdout).trim();
+  if (cur !== '.githooks') {
+    run('git', ['config', 'core.hooksPath', '.githooks']);
+    out.push(`Git hooks: turned on (.githooks/${cur ? `, was ${cur}` : ''}).`);
   }
-  // Husky sets core.hooksPath in "prepare"; without it the commit checks (ratchet, secret scan, author check) would not run.
-  if (has('.husky') && !String(run('git', ['config', '--get', 'core.hooksPath']).stdout).trim()) {
-    run('npx', ['--no-install', 'husky'], 60000);
+}
+
+// 4) Cloud: dependencies, git hooks, Playwright browser.
+if (cloud) {
+  if (has('package.json')) {
+    const pm = has('pnpm-lock.yaml') ? ['pnpm', ['install', '--frozen-lockfile']]
+      : has('yarn.lock') ? ['yarn', ['install', '--frozen-lockfile']]
+      : has('package-lock.json') ? ['npm', ['ci', '--no-audit', '--no-fund']]
+      : ['npm', ['install', '--no-audit', '--no-fund']];
+    if (!has('node_modules')) {
+      const r = run(pm[0], pm[1], 480000);
+      out.push(r.status === 0 ? `Cloud: installed dependencies (${pm[0]}).`
+        : `Cloud: dependency install FAILED (${pm[0]} exit ${r.status}). Run it yourself and read the error: ${String(r.stderr).slice(-300)}`);
+    } else {
+      out.push('Cloud: dependencies already installed.');
+    }
+    // Husky sets core.hooksPath in "prepare"; without it the commit checks (ratchet, secret scan, author check) would not run.
+    if (has('.husky') && !String(run('git', ['config', '--get', 'core.hooksPath']).stdout).trim()) {
+      run('npx', ['--no-install', 'husky'], 60000);
+    }
+  }
+  // Rust: fetch the crates now, so the first check does not stall on downloads.
+  const cargoToml = has('Cargo.toml') ? 'Cargo.toml' : has('src-tauri/Cargo.toml') ? 'src-tauri/Cargo.toml' : null;
+  if (cargoToml) {
+    const v = run('cargo', ['--version'], 30000);
+    if (v.error || v.status !== 0) out.push('Cloud: cargo NOT found, so the Rust checks cannot run. Kim adds to the environment setup script: curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal -c clippy,rustfmt');
+    else {
+      const r = run('cargo', ['fetch', '--manifest-path', cargoToml], 480000);
+      out.push(r.status === 0 ? `Cloud: Rust crates fetched (${String(v.stdout).trim()}).`
+        : `Cloud: cargo fetch FAILED. Likely the network allowlist: crates.io, index.crates.io, static.crates.io. ${String(r.stderr).slice(-200)}`);
+    }
+  }
+  if (has('go.mod')) {
+    const r = run('go', ['mod', 'download'], 480000);
+    out.push(r.status === 0 ? 'Cloud: Go modules downloaded.' : `Cloud: go mod download FAILED (or go is missing): ${String(r.stderr || r.error || '').slice(-200)}`);
   }
   const hooksPath = String(run('git', ['config', '--get', 'core.hooksPath']).stdout).trim();
-  out.push(hooksPath ? `Cloud: git hooks active (${hooksPath}).` : 'Cloud: git hooks NOT active. Run `npx husky` before committing.');
+  out.push(hooksPath ? `Cloud: git hooks active (${hooksPath}).` : `Cloud: git hooks NOT active. Run ${has('.husky') ? '`npx husky`' : 'the setup update (/project-setup update)'} before committing.`);
   if (has('node_modules/@playwright/test')) {
     const r = run('npx', ['--no-install', 'playwright', 'install', 'chromium'], 240000);
     out.push(r.status === 0 ? 'Cloud: Playwright Chromium ready.'
@@ -635,7 +684,7 @@ if (sid) {
       warned: others.map(o => o.session) }));
     if (others.length) {
       const ago = Math.round((now - Math.max(...others.map(o => o.seenAt))) / 60000);
-      out.push(`Session lock: ${others.length} other Claude session(s) open on this folder (last active ${ago} min ago). Before other work, tell Kim in one line: two sessions in one folder edit the same files and mix their commits; close the other one, or say "go anyway". /ship, /feature and /fix wait for that answer.`);
+      out.push(`Session lock: ${others.length} other Claude session(s) open on this folder (last active ${ago} min ago). Before other work, tell Kim in one line: two sessions in one folder edit the same files and mix their commits; close the other one, or say "go anyway". /deliver, /feature and /fix wait for that answer.`);
     }
   } catch {}
 }
@@ -649,7 +698,7 @@ process.exit(0);
 ~~~~js
 #!/usr/bin/env node
 // Status line (project-setup v5.2). Shows model, mode and plan usage, and saves the usage numbers to
-// .claude/state/usage.json so /ship's swarm usage guard can read them (scripts/swarm.mjs usage).
+// .claude/state/usage.json so /deliver's swarm usage guard can read them (scripts/swarm.mjs usage).
 // Claude Code sends the numbers only on Pro and Max plans, after the first reply of a session. Where no status line
 // runs (some desktop and cloud sessions) the file goes stale and the guard falls back to worker usage errors.
 const fs = require('fs');
@@ -704,11 +753,11 @@ You are a read-only scout. Find what the brief asks and report it briefly so the
 Reply in 25 lines or fewer. Say "not found" plainly when you did not find it.
 ~~~~
 
-`.claude/agents/doubter.md (fresh-eyes review of risky tickets; /ship calls it)`
+`.claude/agents/doubter.md (fresh-eyes review of risky tickets; /deliver calls it)`
 ~~~~md
 ---
 name: doubter
-description: Fresh-context skeptic for risky changes (Addy Osmani's doubt-driven development). Gets only the change and its contract (acceptance criteria and rules), never the builder's claim, and looks for where the change breaks the contract. Read-only. /ship calls it on tier 3+ and risky tickets.
+description: Fresh-context skeptic for risky changes (Addy Osmani's doubt-driven development). Gets only the change and its contract (acceptance criteria and rules), never the builder's claim, and looks for where the change breaks the contract. Read-only. /deliver calls it on tier 3+ and risky tickets.
 tools: Read, Grep, Glob, Bash
 model: opus
 effort: high
@@ -743,9 +792,9 @@ Before coding:
 While coding:
 - Test-first: read `.claude/skills/tdd/SKILL.md` and follow it. Follow `## How code is written` in CLAUDE.md: smallest change, delete before adding, no comments that explain what.
 - UI or app behavior: drive it with the recipes in `.claude/skills/verify-<app>/` when that skill exists (launch, doctor, real user path, evidence).
-- **Verify file:** if the brief names one (an e2e spec or check command), it is the acceptance test. Make it pass. Never edit it (/ship noted its hash when it failed before your build); if it is wrong, stop and report why.
-- **Your DONE is a claim:** /ship runs the checks itself. Never touch a ticket's Status, and never weaken a test, a lint rule or a learned check (`scripts/learned-checks.json`) to get green. Never silence one either (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`/`.only`, an empty `catch`, a config switched off): the floor guard refuses that commit. One that is right on purpose (a library bug, generated code): say so under Shortcuts, with the reason.
-- **`WORKTREE: yes` in the brief (swarm mode):** you are in your own copy of the repo. First run `node scripts/swarm.mjs prep` (links node_modules). Write the verify file from the brief exactly as given, at its path. Run only `node scripts/check.mjs --only typecheck` and the unit tests of the files you touched; never e2e or a dev server (/ship runs those in the main folder). Do not commit: /ship brings your changes home.
+- **Verify file:** if the brief names one (an e2e spec or check command), it is the acceptance test. Make it pass. Never edit it (/deliver noted its hash when it failed before your build); if it is wrong, stop and report why.
+- **Your DONE is a claim:** /deliver runs the checks itself. Never touch a ticket's Status, and never weaken a test, a lint rule or a learned check (`scripts/learned-checks.json`) to get green. Never silence one either (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`/`.only`, an empty `catch`, a config switched off): the floor guard refuses that commit. One that is right on purpose (a library bug, generated code): say so under Shortcuts, with the reason.
+- **`WORKTREE: yes` in the brief (swarm mode):** you are in your own copy of the repo. First run `node scripts/swarm.mjs prep` (links node_modules). Write the verify file from the brief exactly as given, at its path. Run only `node scripts/check.mjs --only typecheck` and the unit tests of the files you touched; never e2e or a dev server (/deliver runs those in the main folder). Do not commit: /deliver brings your changes home.
 - Smallest change that meets the acceptance criteria. Touch only what the job needs.
 - **Leave it better:** fix at most one small thing in the files you touched (a bad name, duplication, a missing test). Keep it under about 20% of the job.
 - Check your own work before you report: the verify check (UI: `node scripts/check.mjs --e2e <spec>`) and `node scripts/check.mjs --fast` (in a worktree: only what the WORKTREE rule says).
@@ -802,7 +851,7 @@ mkdirSync('.claude/agents', { recursive: true });
 for (const f of readdirSync('.claude/agents')) if (/^worker-.*\.md$/.test(f)) rmSync(`.claude/agents/${f}`);
 for (const [name, model, effort, desc] of LADDER) {
   writeFileSync(`.claude/agents/${name}.md`,
-    `---\nname: ${name}\ndescription: ${desc} Gets one self-contained job from the router or /ship.\n` +
+    `---\nname: ${name}\ndescription: ${desc} Gets one self-contained job from the router or /deliver.\n` +
     `tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch\nmodel: ${model}\neffort: ${effort}\n---\n\n${body}`);
 }
 console.log(`workers written: ${LADDER.length}`);
@@ -816,7 +865,7 @@ const map = {
   'diagnosing-bugs': ['opus', 'high'],
   'to-spec': ['sonnet', 'medium'], 'to-tickets': ['sonnet', 'medium'], implement: ['sonnet', 'medium'],
   tdd: ['sonnet', 'medium'], 'code-review': ['sonnet', 'medium'], 'setup-matt-pocock-skills': ['sonnet', 'medium'],
-  research: ['sonnet', 'low'], prototype: ['sonnet', 'low'], ship: ['sonnet', 'medium'], 'verify-ticket': ['sonnet', 'medium'],
+  research: ['sonnet', 'low'], prototype: ['sonnet', 'low'], deliver: ['sonnet', 'medium'], 'verify-ticket': ['sonnet', 'medium'],
   'wait-what': ['sonnet', 'low'], 'writing-for-agents': ['sonnet', 'medium'], 'create-verification-skill': ['opus', 'medium'],
   'maintain-verification-skill': ['sonnet', 'medium'], reflect: ['sonnet', 'medium'], feature: ['opus', 'medium'],
   fix: ['opus', 'high'], report: ['sonnet', 'low'], webperf: ['sonnet', 'medium'],
@@ -921,7 +970,7 @@ prompt('s1', 'clean up the header');
 for (const f of ['.claude/hooks/guard.js', '.claude/settings.json', '.claude/settings.local.json', '.claude/state/auth.json',
   '.claude/identity.json', 'quality-baseline.json', 'scripts/quality-ratchet.mjs', 'scripts/secret-scan.mjs',
   'scripts/commit-identity.mjs', 'scripts/check.mjs', 'scripts/trash.mjs', 'scripts/swarm.mjs', '.claude/kit.json',
-  'scripts/learned-checks.mjs', 'scripts/learned-checks.json', '.husky/pre-commit', 'scripts/floor-guard.mjs', 'scripts/report.mjs',
+  'scripts/learned-checks.mjs', 'scripts/learned-checks.json', '.husky/pre-commit', '.githooks/pre-push', 'scripts/floor-guard.mjs', 'scripts/report.mjs',
   '.claude/hooks/statusline.js', '.claude/state/sessions/s1.json', '.claude/state/usage.json']) expect(`Write blocked: ${f}`, write('s1', f), 2);
 expect('Write allowed: src/app/page.tsx', write('s1', 'src/app/page.tsx'), 0);
 expect('Write allowed: .claude/memory/health.md', write('s1', '.claude/memory/health.md'), 0);
@@ -1016,6 +1065,9 @@ prompt('s13', 'run the tests and fix the export');
   'gh api repos/kim/app/pulls -f title=x -f head=a -f base=main', 'curl -X POST https://api.github.com/repos/kim/app/pulls -d {}', 'gh pr create --fill',
   'export GIT_AUTHOR_NAME=Claude', "bash -c 'git commit --author=\"Claude <c@x>\" -m x'", 'git commit --amend --author="Bot <b@x>" --no-edit',
   'sudo rm -rf build', "bash -c 'rm -rf src'", '(git push)', 'echo $(git push)',
+  'cargo publish', 'cargo +stable publish', 'cargo yank --version 1.0.0', 'npm publish', 'pnpm publish --access public', 'twine upload dist/*',
+  'uv publish', 'gh release create v1.0.0', "bash -c 'cargo publish'", 'echo x > .githooks/pre-commit', 'cd .githooks && echo x > pre-push',
+  'chmod -x .githooks/pre-push', 'rm .githooks/commit-msg',
 ].forEach(c => deny('s13', c));
 [
   'timeout 120 npm test', 'env NODE_ENV=test npm test', "bash -c 'npm run build'", 'npx playwright test e2e/a.spec.ts', `node -e "console.log(process.env.NODE_ENV)"`,
@@ -1026,6 +1078,9 @@ prompt('s13', 'run the tests and fix the export');
   'node scripts/swarm.mjs prep', 'node scripts/swarm.mjs collect .claude/worktrees/agent-a1 --check e2e/export/03-csv.spec.ts', 'node scripts/swarm.mjs list',
   'git worktree list', 'git apply --check .trash/swarm/agent-a1.patch', 'node scripts/learned-checks.mjs --list',
   'node scripts/swarm.mjs usage', 'node scripts/report.mjs', 'node scripts/report.mjs --days 7 --save', 'node scripts/floor-guard.mjs --worktree',
+  'cargo test', 'cargo test --test cli export_csv', 'cargo clippy --workspace --all-targets -- -D warnings', 'cargo fmt --all', 'cargo build --release',
+  'cargo add serde --features derive', 'cargo publish --dry-run', 'cargo run -- --help', 'go test ./...', 'python3 -m pytest -q', 'ruff check .',
+  'node scripts/check.mjs --only format,lint', 'node scripts/check.mjs --list', 'cat .githooks/pre-commit', 'ls .githooks',
 ].forEach(c => allow('s13', c));
 expect('Read tool: .env.local', guard('s13', 'Read', { file_path: '.env.local' }), 2);
 expect('Read tool: .env.example', guard('s13', 'Read', { file_path: '.env.example' }), 0);
@@ -1055,30 +1110,30 @@ expect("one session's I authorize does not unlock another's push", bash('s20', '
 prompt('s20', 'swarm');
 expect('setup unlock survives an answer while another session works', write('s20', '.claude/hooks/prompt.js'), 0);
 
-// L) Session lock: a second Claude session on the same folder is announced once; /ship, /feature and /fix wait for "go anyway".
+// L) Session lock: a second Claude session on the same folder is announced once; /deliver, /feature and /fix wait for "go anyway".
 const sdir = join(dir, '.claude/state/sessions');
 rmSync(sdir, { recursive: true, force: true });
 const start = s => { const t = Date.now(); const r = spawnSync('node', [join(dir, '.claude/hooks/session.js')], { input: JSON.stringify({ session_id: s, source: 'startup' }), env, encoding: 'utf8', cwd: dir }); return { out: String(r.stdout), ms: Date.now() - t, status: r.status }; };
 const said = (s, text) => String(spawnSync('node', [join(dir, '.claude/hooks/prompt.js')], { input: JSON.stringify({ session_id: s, prompt: text }), env, encoding: 'utf8' }).stdout);
 const lockLine = out => /Session lock:/.test(out);
-const stopLine = out => /Do not start ship, feature or fix/.test(out);
+const stopLine = out => /Do not start deliver, feature or fix/.test(out);
 expect('first session: no lock warning', lockLine(start('s30').out), false);
 const second = start('s31');
 expect('second session on the folder: warned at start', lockLine(second.out), true);
 expect('session start exits 0', second.status, 0);
 expect('second session: not warned again on a normal message', lockLine(said('s31', 'what does the export do?')), false);
-expect('second session: /ship waits', stopLine(said('s31', '/ship .scratch/export/')), true);
+expect('second session: /deliver waits', stopLine(said('s31', '/deliver .scratch/export/')), true);
 expect('second session: expanded /fix waits', stopLine(said('s31', '<command-name>/fix</command-name> login fails')), true);
 expect('second session: "fix the typo" is not a build command', stopLine(said('s31', 'fix the typo on the login page')), false);
-expect('"go anyway" lets it run', lockLine(said('s31', '/ship .scratch/export/ go anyway')), false);
+expect('"go anyway" lets it run', lockLine(said('s31', '/deliver .scratch/export/ go anyway')), false);
 expect('"go anyway" sticks for that session', lockLine(said('s31', '/feature csv import')), false);
 expect('first session: told once about the newcomer', lockLine(said('s30', 'hello')), true);
 expect('first session: /feature waits', stopLine(said('s30', '/feature csv import')), true);
 spawnSync('node', [join(dir, '.claude/hooks/session.js'), '--end'], { input: JSON.stringify({ session_id: 's31', reason: 'exit' }), env, cwd: dir });
 expect('session end removes its note', existsSync(join(sdir, 's31.json')), false);
-expect('after the other session ended: /ship runs', lockLine(said('s30', '/ship .scratch/export/')), false);
+expect('after the other session ended: /deliver runs', lockLine(said('s30', '/deliver .scratch/export/')), false);
 writeFileSync(join(sdir, 'old.json'), JSON.stringify({ session: 'old', seenAt: Date.now() - 4 * 60 * 60 * 1000 }));
-expect('a session quiet for 4 hours does not count', lockLine(said('s30', '/ship .scratch/export/')), false);
+expect('a session quiet for 4 hours does not count', lockLine(said('s30', '/deliver .scratch/export/')), false);
 const manual = spawnSync('node', [join(dir, '.claude/hooks/session.js')], { env, encoding: 'utf8', cwd: dir, stdio: ['pipe', 'pipe', 'pipe'], timeout: 10000 });
 expect('session.js run by hand (no input) finishes', manual.status, 0);
 
@@ -1094,11 +1149,11 @@ if (fails.length) { console.log(fails.join('\n')); console.log(`${fails.length} 
 console.log(`hooks: all ${pass} passed`);
 ~~~~
 
-`.claude/skills/ship/SKILL.md`
+`.claude/skills/deliver/SKILL.md`
 ~~~~md
 ---
-name: ship
-description: Build one ticket or a whole feature's tickets, fully automatic - writes each ticket's check first (red), builds it on the worker tier the task needs (Sonnet low up to Fable), or up to 5 tickets at once in swarm mode (fewer when plan usage runs low), proves it green on the real app (verify-ticket), reviews it (plus a fresh-eyes doubt review on risky tickets), commits as Kim, then updates the notes, the verify map and the learned checks. Use when Kim runs /ship with a ticket file or a .scratch folder, or when /feature or /fix hands over its tickets.
+name: deliver
+description: Build one ticket or a whole feature's tickets, fully automatic - writes each ticket's check first (red), builds it on the worker tier the task needs (Sonnet low up to Fable), or up to 5 tickets at once in swarm mode (fewer when plan usage runs low), proves it green on the real app (verify-ticket), reviews it (plus a fresh-eyes doubt review on risky tickets), commits as Kim, then updates the notes, the verify map and the learned checks. Use when Kim runs /deliver with a ticket file or a .scratch folder, or when /feature or /fix hands over its tickets.
 allowed-tools: Bash Edit Write MultiEdit NotebookEdit Read Glob Grep Agent Skill TodoWrite
 model: sonnet
 effort: medium
@@ -1108,9 +1163,9 @@ effort: medium
 
 Matt Pocock's loop (check first, small steps, test-first build, two-axis review) with Lauren Tan's finish (done means proven on the real app; a mistake made twice becomes a check). One orchestrator: you.
 
-**Runs unattended, in one turn:** this skill pre-approves its tools for the whole /ship turn (`allowed-tools`), so Kim gets no approval prompts; the guard still blocks every dangerous command. The approval lasts only for this turn, so never end the turn to wait: dispatch every agent in the foreground (`run_in_background: false`; in swarm mode several foreground calls in ONE message run at the same time) and run every command in the foreground, then go straight on to the next step and the next ticket until the end report. Follow the Shell commands rules in CLAUDE.md (one plain command per call, delete with `node scripts/trash.mjs`, checks with `node scripts/check.mjs`): Claude Code's own rm check asks Kim for any `rm` built on a variable, in every mode.
+**Runs unattended, in one turn:** this skill pre-approves its tools for the whole /deliver turn (`allowed-tools`), so Kim gets no approval prompts; the guard still blocks every dangerous command. The approval lasts only for this turn, so never end the turn to wait: dispatch every agent in the foreground (`run_in_background: false`; in swarm mode several foreground calls in ONE message run at the same time) and run every command in the foreground, then go straight on to the next step and the next ticket until the end report. Follow the Shell commands rules in CLAUDE.md (one plain command per call, delete with `node scripts/trash.mjs`, checks with `node scripts/check.mjs`): Claude Code's own rm check asks Kim for any `rm` built on a variable, in every mode.
 
-**Mode:** read `.claude/kit.json`. `"swarm": true` = Swarm mode (section below) with up to `maxAgents` (default 5) workers at once; otherwise one ticket at a time. Kim can override one run: `/ship <folder> swarm` or `/ship <folder> normal`.
+**Mode:** read `.claude/kit.json`. `"swarm": true` = Swarm mode (section below) with up to `maxAgents` (default 5) workers at once; otherwise one ticket at a time. Kim can override one run: `/deliver <folder> swarm` or `/deliver <folder> normal`.
 
 Input: a ticket (`.scratch/<feature>/issues/NN-<slug>.md`) or a feature folder (`.scratch/<feature>/`, or `.scratch/fixes/<date>-<slug>/` from /fix): then every ticket not `Status: done`, in number order, skipping any whose "Blocked by" tickets are not done. Note the starting commit (`git rev-parse HEAD`) for the end steps. A ticket marked done with no commit starting `<NN>:` (`git log --oneline --grep "^<NN>:"`) stopped before its commit: rerun its check and commit it.
 
@@ -1119,7 +1174,7 @@ Input: a ticket (`.scratch/<feature>/issues/NN-<slug>.md`) or a feature folder (
 0. **Session lock:** this session was told another Claude session is open on this folder (a `Session lock:` line) and Kim has not said "go anyway": stop and tell him in one line. Two sessions in one folder edit the same files and mix their commits.
 1. Commit any uncommitted files under `.scratch/<feature>/` (`plan: <feature> spec and tickets`), so a crash or another machine never loses the plan.
 2. Read once: CLAUDE.md, `.claude/memory/health.md`, `.claude/memory/codemap.md`, `.scratch/<feature>/spec.md`, and the sections of `docs/agents/notes.md` for the areas the feature touches. Wide searches, long logs and long test output go to the `Explore` agent (Haiku, read-only); you keep the judgment calls.
-3. **Verify skill, automatically:** a web app (a Playwright config or a dev-server script) with no `.claude/skills/verify-*/` folder: follow `.claude/skills/create-verification-skill/SKILL.md` now, once, before the first ticket (it commits `verify-<app>`). If the app cannot start here (missing env values, local database down), skip it, use plain Playwright checks, and say so in the end report.
+3. **Verify skill, automatically:** a web app (a Playwright config or a dev-server script) or a runnable program (a CLI or desktop binary: `src/main.rs`, `src/bin/`, `[[bin]]`, `src-tauri/`) with no `.claude/skills/verify-*/` folder: follow `.claude/skills/create-verification-skill/SKILL.md` now, once, before the first ticket (it commits `verify-<app>`). If the app cannot start here (missing env values, local database down), skip it, use plain Playwright checks, and say so in the end report.
 
 ## Routing: the tier the task needs
 
@@ -1166,7 +1221,7 @@ UI work that is also risky goes by its risk. A `## Learned rules` line in CLAUDE
 
 Builds up to `maxAgents` tickets (default 5) at the same time, each on its own tier and in its own git worktree, so workers never edit the same files or run their tests in the same folder.
 
-0. **Usage guard, before each batch:** `node scripts/swarm.mjs usage` prints the batch size: `batch 1` means normal (one ticket at a time) until a later batch reads lower usage; a smaller number caps the batch. Say any drop in the end report (`usage guard: normal from ticket 04 (5h 83%)`). `usage unknown` (no status line numbers, e.g. the desktop app or a cloud session) keeps `maxAgents`. A worker that stops on a usage limit (its reply or error says usage limit, rate limit or limit reached): start no new batch, collect what finished, run the rest one at a time; if this session hits the limit too, the end report says to run `/ship` on the folder again later.
+0. **Usage guard, before each batch:** `node scripts/swarm.mjs usage` prints the batch size: `batch 1` means normal (one ticket at a time) until a later batch reads lower usage; a smaller number caps the batch. Say any drop in the end report (`usage guard: normal from ticket 04 (5h 83%)`). `usage unknown` (no status line numbers, e.g. the desktop app or a cloud session) keeps `maxAgents`. A worker that stops on a usage limit (its reply or error says usage limit, rate limit or limit reached): start no new batch, collect what finished, run the rest one at a time; if this session hits the limit too, the end report says to run `/deliver` on the folder again later.
 1. **Pick a batch:** open tickets whose "Blocked by" tickets are done and whose likely files do not overlap. A ticket that touches shared setup (migrations, `package.json`, lockfile, config, routing, shared types) goes alone, before the others. One big task instead of tickets: split it into up to `maxAgents` independent parts by module, each with its own acceptance criteria and check, and treat each part as a ticket.
 2. **Checks first, in the main folder:** write each ticket's check and run it red (verify-ticket, one at a time). Note each check file's hash.
 3. **Dispatch the batch in ONE message:** one Agent call per ticket, the tier's agent, `isolation: "worktree"`, foreground. The brief is the normal brief plus `WORKTREE: yes` and the check file's full content: the worktree starts from the last commit, so the uncommitted check is not there; the worker writes it unchanged at the same path.
@@ -1192,12 +1247,12 @@ Optional, only when Kim asks or the Vercel/Supabase connectors are on: productio
 
 ## End report (short)
 
-One line per ticket (start → end tier, rounds, verify, doubt findings, committed or blocked; `swarm` when it ran in a batch), the health line, new debt items, new dependencies (name, why), new learned checks, every `Floor-exception` (rule, path, reason: the bar lowered on purpose), UNVERIFIED doc items left, any usage-guard drop, then **TEST IT YOURSELF**: only what a machine could not judge (looks right, reads right, feels fast), as checkboxes with what to open and click. List what was already machine-verified in one line. Close with: on the Mac "Then say `push it, I authorize` (pre-push checks run first)"; in a cloud session "Then say `ship it, I authorize` (rebases this branch on main and pushes it to main; no PR)", plus "not backed up yet" if the branch was never pushed. Never push, never open a pull request. Cut off by a usage limit: run `/ship` on the folder again; done tickets are skipped.
+One line per ticket (start → end tier, rounds, verify, doubt findings, committed or blocked; `swarm` when it ran in a batch), the health line, new debt items, new dependencies (name, why), new learned checks, every `Floor-exception` (rule, path, reason: the bar lowered on purpose), UNVERIFIED doc items left, any usage-guard drop, then **TEST IT YOURSELF**: only what a machine could not judge (looks right, reads right, feels fast), as checkboxes with what to open and click. List what was already machine-verified in one line. Close with: on the Mac "Then say `push it, I authorize` (pre-push checks run first)"; in a cloud session "Then say `ship it, I authorize` (rebases this branch on main and pushes it to main; no PR)", plus "not backed up yet" if the branch was never pushed. Never push, never open a pull request. Cut off by a usage limit: run `/deliver` on the folder again; done tickets are skipped.
 ~~~~
 
 `.claude/KIT-GUIDE.md` (the kit guide; Help mode reads it)
 ~~~~markdown
-# Claude Code kit guide (project-setup v5.2)
+# Claude Code kit guide (project-setup v5.3)
 
 What this repo's Claude Code kit does, how to use it, and where its limits are. Ask "what can the kit do?" or run `/anthropic-skills:project-setup help` to see this guide. Claude answers from this file and checks it against the repo's real state.
 
@@ -1209,36 +1264,36 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | Two flows | `/feature`: you answer the grill questions; spec, tickets, build, checks, review and commits run by themselves. `/fix`: you describe the bug; cause, failing test, fix and commit run by themselves |
 | Router | Every message gets the right helper: Claude itself, a Haiku scout that only reads, or a worker tier sized to the task |
 | Normal or swarm | Normal: one ticket at a time. Swarm: up to 5 workers at once, each on the model the task needs, each in its own copy of the repo (git worktree). Chosen at setup or update. Swarm drops to normal by itself when plan usage runs low |
-| Proof | A check written before the build fails, then passes after it; for screens, `verify-<app>` drives the real app and keeps evidence. /ship creates `verify-<app>` by itself the first time |
+| Proof | A check written before the build fails, then passes after it; for screens, `verify-<app>` drives the real app and keeps evidence. /deliver creates `verify-<app>` by itself the first time |
 | Quality | Lauren Tan's and Matt Pocock's principles in CLAUDE.md; lint, typecheck, tests and learned checks block a bad commit; the floor guard refuses a commit that silences a check or makes a test easier; risky tickets get a fresh-eyes doubt review; the ratchet reports the trend |
 | Safety | The guard blocks dangerous commands (also inside `bash -c`, `timeout`, one-line scripts); git's push gate lets Claude push only after "I authorize"; secret scan; Mac sandbox |
 | Only you on GitHub | Every commit is yours; AI lines are stripped; the push gate refuses any commit by someone else; no pull requests |
-| No prompts | Routine commands are pre-approved, deletes go through the trash script, checks are one command, /ship runs in one turn |
+| No prompts | Routine commands are pre-approved, deletes go through the trash script, checks are one command, /deliver runs in one turn |
 | Mac, Windows, cloud | The kit, specs, tickets and notes are committed, so every machine and cloud session has them |
-| One session per folder | A second Claude session on the same folder is announced; /ship, /feature and /fix wait until you close one or say "go anyway" |
+| One session per folder | A second Claude session on the same folder is announced; /deliver, /feature and /fix wait until you close one or say "go anyway" |
 | Report | `/report`: one page on what shipped, what is blocked and how the debt moved |
 
 ## 2. Commands you type
 
 | Command | What it does | Model |
 |---|---|---|
-| `/feature <idea>` | The whole flow: grill, spec, tickets, /ship. Add `swarm` or `normal` to override the mode once | Opus, then workers |
-| `/fix <bug>` | Bug to committed fix: finds the cause, writes a test that fails because of the bug, fixes it through /ship | Opus high, then workers |
+| `/feature <idea>` | The whole flow: grill, spec, tickets, /deliver. Add `swarm` or `normal` to override the mode once | Opus, then workers |
+| `/fix <bug>` | Bug to committed fix: finds the cause, writes a test that fails because of the bug, fixes it through /deliver | Opus high, then workers |
 | `/report` (`/report week`) | One page: shipped, blocked, debt, commits waiting for your push. Read-only | Sonnet low |
 | `/webperf` | Speed audit of your pages; numbers only when measured (Lighthouse on a local production build, or a report you give) | Sonnet |
 | `/grill-with-docs` | Only the interview, when you want to think before building | Opus |
 | `/wayfinder` | Maps huge work into slices before any spec (/feature runs it for huge work) | Fable (Opus when Fable is off) |
 | `/to-spec`, `/to-tickets` | Spec, then tickets with a `Verify by:` check each | Sonnet |
-| `/ship .scratch/<feature>/` | Builds every open ticket, fully automatic (`swarm` / `normal` to override) | Sonnet + workers |
+| `/deliver .scratch/<feature>/` | Builds every open ticket, fully automatic (`swarm` / `normal` to override) | Sonnet + workers |
 | `/verify-ticket <ticket>` | Checks one ticket: red before, green after, app evidence | Sonnet |
-| `/create-verification-skill` | Writes `verify-<app>` (/ship does this by itself the first time) | Opus |
-| `/maintain-verification-skill` | Re-checks the verify map (/ship runs it for changed features) | Sonnet |
+| `/create-verification-skill` | Writes `verify-<app>` (/deliver does this by itself the first time) | Opus |
+| `/maintain-verification-skill` | Re-checks the verify map (/deliver runs it for changed features) | Sonnet |
 | `/reflect` | Turns lessons from a hard session into checks; skill changes wait for your "apply reflect" | Sonnet |
 | `/diagnosing-bugs` | Only finds the cause of a bug, no fix (`/fix` uses it) | Opus |
 | `/improve-codebase-architecture` | Looks for deeper, simpler structure | Opus |
 | `/wait-what` | Re-explains the last reply in plain words | Sonnet |
 | `/research`, `/prototype` | Quick research or a throwaway prototype | Sonnet |
-| `/tdd`, `/code-review`, `/implement` | Used inside /ship; `/implement` suits one small change you are watching | Sonnet |
+| `/tdd`, `/code-review`, `/implement` | Used inside /deliver; `/implement` suits one small change you are watching | Sonnet |
 | `/anthropic-skills:project-setup check` | Health check of the kit (read-only) | session |
 | `/anthropic-skills:project-setup update` | Updates skills and kit files; `update swarm` or `update normal` switches the mode | session |
 | `/anthropic-skills:project-setup cloud-env` | Prints the paste-ready cloud environment variables | session |
@@ -1251,7 +1306,7 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | "push it, I authorize" | Claude may push (never force) and edit protected kit files | This message only (at most 30 minutes) |
 | "ship it, I authorize" (cloud) | Rebase the cloud branch on `main` and push it to `main` | This message only (at most 30 minutes) |
 | "apply reflect" | Apply the skill changes waiting in `.claude/memory/reflect-proposals.md` | This message |
-| "go anyway" | /ship, /feature and /fix run although another Claude session is open on this folder | This session |
+| "go anyway" | /deliver, /feature and /fix run although another Claude session is open on this folder | This session |
 | `/anthropic-skills:project-setup ...` | Edits to protected kit files, your git identity and the mode; never a push | 2 hours, this session |
 
 ## 4. Everyday flows
@@ -1266,7 +1321,7 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 
 - Each task starts on the tier it needs: Sonnet low (mechanical), Sonnet medium (normal and UI), Opus medium (risky or large), Opus high (risky and unclear), Fable (architecture across modules). One tier up only after an unexpected failure. The run log teaches where each ticket type should start.
 - **Swarm mode:** up to 5 tickets (or 5 parts of one big task) at once, each on its own tier and in its own worktree; their work comes home one ticket at a time, checked, reviewed and committed as you. Tickets that touch shared setup (migrations, packages, config) run alone. Faster, but it spends usage faster: 5 workers at once use your plan's limits about 5 times as fast.
-- **Usage guard (swarm):** the status line shows your plan usage and saves it; before each batch /ship reads it and runs 2 at once from 60% of the 5-hour limit, one at a time from 80% (or 90% of the weekly limit). Where no status line runs (some desktop and cloud sessions) it cannot see usage; then a worker that stops on a usage limit switches the rest of the run to normal. Numbers in `.claude/kit.json` (`usageGuard`).
+- **Usage guard (swarm):** the status line shows your plan usage and saves it; before each batch /deliver reads it and runs 2 at once from 60% of the 5-hour limit, one at a time from 80% (or 90% of the weekly limit). Where no status line runs (some desktop and cloud sessions) it cannot see usage; then a worker that stops on a usage limit switches the rest of the run to normal. Numbers in `.claude/kit.json` (`usageGuard`).
 - **Doubt review:** tier 3+ and risky tickets get one more Opus review in a fresh context that sees only the diff and the acceptance criteria. It costs one Opus call per risky ticket.
 - Haiku only reads (wide searches, logs). Fable not available: Opus xhigh stands in, remembered in `.claude/models.json`. Overloaded models fall back to Opus, then Sonnet.
 
@@ -1274,7 +1329,8 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 
 - Take a feature from idea to committed, checked code after one interview, and a bug from report to a committed fix with a test that proves it.
 - Check framework code against the official docs for your installed versions, and say what it could not verify.
-- Refuse a commit that silences a check (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`, an empty `catch`, strict mode off) unless the message says why.
+- Refuse a commit that silences a check (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`, an empty `catch`, strict mode off; Rust `#[allow]`, `#[ignore]`, lints set to allow in Cargo.toml; Python `noqa`, `type: ignore`, `pytest.skip`; Go `nolint`, `t.Skip`) unless the message says why.
+- Check any stack: TypeScript/JavaScript, Rust (fmt, clippy with warnings as errors, test, build; Tauri's `src-tauri/` too), Python and Go are found by themselves; anything else runs from `checks` in `.claude/kit.json`. `node scripts/check.mjs --list` shows what this repo runs. A run with nothing to check fails.
 - Build several tickets at once in swarm mode, each on the right model.
 - Write each check before the code, and refuse to call a ticket done until it passes on the real app.
 - Create and maintain its own `verify-<app>` skill that drives your app like a user and keeps evidence.
@@ -1299,9 +1355,12 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | Stop a script Claude wrote from doing something the guard cannot see | The guard reads command text | The git hooks, CI and the Mac sandbox are the hard locks |
 | Judge looks, wording or feel | Needs a human | You, from the TEST IT YOURSELF list |
 | Answer the grill for you | The interview is where your intent comes from | You, once per feature |
-| Stop a second session from opening | The session lock warns and makes /ship, /feature and /fix wait; it cannot close a session | You close one |
+| Stop a second session from opening | The session lock warns and makes /deliver, /feature and /fix wait; it cannot close a session | You close one |
 | Give speed numbers from reading code | Only a measurement is a number; code reading gives "potential impact" | `/webperf` with a production build or your Lighthouse report |
 | Catch every way to fake green | The floor guard reads the diff with patterns; a determined change can hide | Review, the doubt review and CI |
+| Guess checks for a stack it does not know (Java, .NET, Swift, Dart...) | `check.mjs` knows package.json, Rust, Python and Go | You or setup name them in `.claude/kit.json` `checks` |
+| Drive a Tauri window on the Mac | No WebDriver for the macOS webview | Playwright covers the web part; you check the window |
+| Publish a crate or package, or make a GitHub release | Public and permanent | You |
 
 ## 8. Automatic checks
 
@@ -1311,9 +1370,9 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | Every message | Router reminder (with the swarm note when it is on); "I authorize" and setup unlocks |
 | Every command and file read Claude does | The guard, including inside wrappers and one-line scripts |
 | Every ticket | Check red before the build, green after, fast checks, app evidence for screens, review; risky ones also the doubt review |
-| Every commit | Format, typecheck, tests, secret scan, learned checks, author check (AI lines stripped), floor guard |
+| Every commit | Format, lint, typecheck or tests for the stack (Husky in JS/TS repos, `.githooks/` elsewhere), secret scan, learned checks, author check (AI lines stripped), floor guard |
 | Every push | Push gate (Claude needs "I authorize"; every pushed commit must be yours), then all checks |
-| Every push on GitHub | CI repeats the checks, plus e2e, npm audit and the author check; the ratchet reports |
+| Every push on GitHub | CI repeats the checks per stack, plus e2e, `npm audit` or `cargo audit`, and the author check; the ratchet reports |
 
 ## 9. Files
 
@@ -1324,7 +1383,7 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | `.claude/memory/` | health.md, codemap.md, runs.log, reflect-proposals.md |
 | `.claude/state/` | Local only: unlocks, open sessions, plan usage, saved reports (protected, never committed) |
 | `.scratch/<feature>/` | spec.md, issues/NN-*.md, wayfinder map.md (`.scratch/fixes/<date>-<slug>/` for /fix) |
-| `.claude/skills/` | Matt Pocock's skills, `feature`, `fix`, `ship`, `verify-ticket`, `report`, `webperf`, Lauren Tan's verification skills and `reflect`, and `verify-<app>` |
+| `.claude/skills/` | Matt Pocock's skills, `feature`, `fix`, `deliver`, `verify-ticket`, `report`, `webperf`, Lauren Tan's verification skills and `reflect`, and `verify-<app>` |
 | `.claude/agents/` | 5 worker tiers, the `Explore` scout and the `doubter` |
 | `.claude/hooks/` | guard.js, prompt.js, session.js, statusline.js (protected) |
 | `scripts/` | check, trash, swarm, push-gate, learned-checks, floor-guard, report, quality-ratchet, secret-scan, commit-identity (protected) |
@@ -1338,9 +1397,9 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | "BLOCKED by project guard" on something harmless | Tell Claude to stop; run `/anthropic-skills:project-setup check`. A wrong block is a bug in the skill |
 | "Push gate:" when Claude pushes | You did not say "I authorize" in the last 30 minutes. Say it, or push yourself |
 | "Push gate:" listing commits by someone else or AI lines | Those commits stay local; fix them with section 11 before pushing |
-| "swarm: CONFLICT" | Two workers touched the same lines; /ship rebuilds that ticket alone. Nothing to do |
-| "swarm off: no worktrees" | This session cannot make worktrees; /ship ran one ticket at a time. Nothing breaks |
-| Usage runs out fast in swarm mode | The usage guard drops to normal by itself where the status line runs. Always normal: `/anthropic-skills:project-setup update normal`, or `/ship <folder> normal` for one run |
+| "swarm: CONFLICT" | Two workers touched the same lines; /deliver rebuilds that ticket alone. Nothing to do |
+| "swarm off: no worktrees" | This session cannot make worktrees; /deliver ran one ticket at a time. Nothing breaks |
+| Usage runs out fast in swarm mode | The usage guard drops to normal by itself where the status line runs. Always normal: `/anthropic-skills:project-setup update normal`, or `/deliver <folder> normal` for one run |
 | "Session lock: another Claude session is open" | Close the other session on this folder (or wait until it ends), or say "go anyway". A crashed session stops counting after 3 hours |
 | "floor-guard: Commit refused" | The change silences a check or makes a test easier. Claude fixes the code; if it is right on purpose, the commit message gets a `Floor-exception: <rule> <path> - <reason>` line, and the end report and `/report` list it |
 | "usage unknown" from the usage guard | No status line numbers here (desktop app, cloud, or a plan that does not send them). Swarm still runs; a usage-limit stop switches to normal |
@@ -1360,11 +1419,11 @@ New work: the hooks keep every commit yours, and the push gate refuses to send a
 5. Push yourself: `git push --force --all` and `git push --force --tags`. Re-clone on your other machines. GitHub updates the contributor list within a day.
 ~~~~
 
-`.claude/skills/verify-ticket/SKILL.md (how /ship proves each ticket; Kim can run /verify-ticket)`
+`.claude/skills/verify-ticket/SKILL.md (how /deliver proves each ticket; Kim can run /verify-ticket)`
 ~~~~markdown
 ---
 name: verify-ticket
-description: Prove one ticket works before it counts as done, the Matt Pocock and Lauren Tan way - a check written before the build that fails (red), the same check passing after it (green), the fast checks, and for anything a user touches one run of verify-<app> on the real app with evidence. Use inside /ship for every ticket, or when Kim runs /verify-ticket on a ticket file.
+description: Prove one ticket works before it counts as done, the Matt Pocock and Lauren Tan way - a check written before the build that fails (red), the same check passing after it (green), the fast checks, and for anything a user touches one run of verify-<app> on the real app with evidence. Use inside /deliver for every ticket, or when Kim runs /verify-ticket on a ticket file.
 model: sonnet
 effort: medium
 ---
@@ -1375,18 +1434,19 @@ Done means proven on the real thing, not "the worker said DONE". No gate files: 
 
 ## Before the build: red
 
-1. The ticket's `Verify by:` line names the check: a Playwright spec for UI (`e2e/<feature>/<NN>-<slug>.spec.ts`), a test command for logic or an API, or `none (no behavior)` for docs and config. No line: derive one from the acceptance criteria and add it to the ticket.
+1. The ticket's `Verify by:` line names the check: a Playwright spec for UI (`e2e/<feature>/<NN>-<slug>.spec.ts`), a CLI test for a command-line program (Rust: a module in `tests/cli.rs` with `assert_cmd`), a test command for logic or an API, or `none (no behavior)` for docs and config. No line: derive one from the acceptance criteria and add it to the ticket.
 2. Write the check yourself (the builder never writes its own acceptance test). Cover every acceptance criterion; give each test a title that names its criterion.
    - **UI:** visible labels and roles (`getByRole`, `getByLabel`), fake data, the dev test account. Learn the screen from its code first (labels, field order, fields that stay disabled until another is filled). At most one probe run of the live page, in the foreground, with `--timeout 15000`, then delete the probe with `node scripts/trash.mjs`. When `.claude/skills/verify-<app>/` exists, use its launch, doctor and drive recipes and assert the side effect too (the row written, the file produced), not only the screen.
    - **API / server action:** a test or a small script under `e2e/checks/` with the expected status and fields.
-   - **Pure logic:** a unit test at the public seam.
-3. Run it once (UI: `node scripts/check.mjs --e2e <spec>`; otherwise its command). It must fail, and on the missing behavior, not on a selector, a login or a server that is down. A check that passes already proves nothing: make it test the new behavior.
+   - **CLI:** run the real binary with the ticket's args and stdin in a temp dir; check stdout, stderr, exit code and the files it writes (Rust: `assert_cmd` + `predicates` in `tests/cli.rs`; others: the stack's runner).
+   - **Pure logic:** a unit test at the public seam (Rust: in the module's `#[cfg(test)] mod tests`, or `tests/` for the public API).
+3. Run it once (UI: `node scripts/check.mjs --e2e <spec>`; Rust: `cargo test --test cli <name>` or `cargo test <name>`; otherwise its command). It must fail, and on the missing behavior, not on a selector, a login or a server that is down. A check that passes already proves nothing: make it test the new behavior.
 4. Note the check file's hash (`git hash-object <file>`). The builder may not change it.
 
 ## After the build: green
 
 5. The hash is unchanged. Changed: find out why; a check weakened to pass is a BLOCKER.
-6. Run the same check, then `node scripts/check.mjs --fast` (lint, typecheck, tests, learned checks; the ratchet only reports).
+6. Run the same check, then `node scripts/check.mjs --fast` (format, lint, typecheck, tests, learned checks for every stack; the ratchet only reports).
 7. Something a user touches and `verify-<app>` exists: drive the feature once through its recipe and keep the evidence in `.trash/evidence/<NN>/` (the screen and the side effect).
 8. All green: set `Status: done` and add one line under it: `Verified: <check> PASS · fast checks PASS · app evidence <path or "n/a"> (<date>)`. Anything red is a fix-round finding, word for word (full logs in `.trash/logs/`).
 9. The check itself turns out wrong after the build: `git stash push -- <changed source files>`, fix the check, run it red again, `git stash pop`, run it green, and say so in the end report.
@@ -1402,7 +1462,7 @@ Done means proven on the real thing, not "the worker said DONE". No gate files: 
 ~~~~markdown
 ---
 name: feature
-description: Take a feature from idea to committed, verified code in one go - grill Kim with Matt Pocock's grill-with-docs (the only part that needs him), then write the spec and the tickets and run /ship to the end without stopping. Use for /feature, or when Kim asks for a new feature, a big change, or anything not yet specified. A bug goes to the fix skill instead.
+description: Take a feature from idea to committed, verified code in one go - grill Kim with Matt Pocock's grill-with-docs (the only part that needs him), then write the spec and the tickets and run /deliver to the end without stopping. Use for /feature, or when Kim asks for a new feature, a big change, or anything not yet specified. A bug goes to the fix skill instead.
 allowed-tools: Bash Edit Write MultiEdit NotebookEdit Read Glob Grep Agent Skill TodoWrite
 model: opus
 effort: medium
@@ -1418,15 +1478,15 @@ Matt Pocock's flow (grill, spec, tickets, test-first build) with Lauren Tan's fi
 3. **Spec:** follow `.claude/skills/to-spec/SKILL.md` → `.scratch/<feature>/spec.md`. Where it asks Kim to review or approve, decide yourself with the grill's answers and note the choice in the spec.
 4. **Tickets:** follow `.claude/skills/to-tickets/SKILL.md` → `.scratch/<feature>/issues/NN-<slug>.md`, thin vertical slices, each with testable acceptance criteria and a `Verify by:` line. Size each one at about 100 changed lines, 300 at most; bigger: split it (Addy Osmani's change sizing: small diffs get reviewed properly). Same rule: decide, do not wait. Mark which tickets touch shared setup (migrations, `package.json`, config), so swarm mode runs those alone.
 5. **Save the plan:** `git add .scratch/<feature> GLOSSARY.md docs/adr` (paths that exist), `git commit -m "plan: <feature> spec and tickets"`.
-6. **Build:** invoke the `ship` skill (Skill tool) on `.scratch/<feature>/`, with `swarm` or `normal` if Kim gave one. It runs to its end report.
+6. **Build:** invoke the `deliver` skill (Skill tool) on `.scratch/<feature>/`, with `swarm` or `normal` if Kim gave one. It runs to its end report.
 7. **Never push.** The end report tells Kim to test the short list and say "push it, I authorize".
 ~~~~
 
-`.claude/skills/fix/SKILL.md (bug in, cause found, failing test first, fixed and committed through /ship)`
+`.claude/skills/fix/SKILL.md (bug in, cause found, failing test first, fixed and committed through /deliver)`
 ~~~~markdown
 ---
 name: fix
-description: Take a bug from report to committed fix in one go - find the root cause (Matt Pocock's diagnosing-bugs), prove it with a test that fails because of the bug (Addy Osmani's Prove-It rule), then fix, check, review and commit as Kim through /ship. Use for /fix, or when Kim reports something broken, an error, a wrong result or a regression.
+description: Take a bug from report to committed fix in one go - find the root cause (Matt Pocock's diagnosing-bugs), prove it with a test that fails because of the bug (Addy Osmani's Prove-It rule), then fix, check, review and commit as Kim through /deliver. Use for /fix, or when Kim reports something broken, an error, a wrong result or a regression.
 allowed-tools: Bash Edit Write MultiEdit NotebookEdit Read Glob Grep Agent Skill TodoWrite WebFetch WebSearch
 model: opus
 effort: high
@@ -1443,8 +1503,8 @@ Like /feature, but for something that used to work or should work. No fix withou
    - The cause is a design gap across modules, or the right fix is a new behavior: say so and hand over to the `feature` skill with the diagnosis as the idea.
 4. **Ticket:** `.scratch/fixes/<YYYY-MM-DD>-<slug>/spec.md` (the report, the cause line, the chosen fix in two lines) and `issues/01-<slug>.md` in /to-tickets' format: what is broken (expected vs actual), `Cause:` line, `Cause tag: <kebab-case kind, e.g. missing-null-check>`, acceptance criteria (the bug is gone; nothing else changes; the same kind of input elsewhere is covered when it shares the code), `Verify by:` the regression test (a unit test at the public seam for logic, an e2e spec for a screen), likely files, and `The check must fail with: <the symptom>`. Under ~300 changed lines; bigger: split.
 5. **Save the plan:** `git add .scratch/fixes/<folder>`, `git commit -m "plan: fix <slug>"`.
-6. **Build:** invoke the `ship` skill (Skill tool) on `.scratch/fixes/<folder>/`, with `swarm` or `normal` if Kim gave one. /ship writes the regression test first and runs it red: it must fail with the symptom, not on setup. A check that cannot be made to fail means the cause is wrong: /ship blocks the ticket; come back to step 3 once with what it found, then report BLOCKED with what was tried.
-7. **Same bug twice:** /ship's learned-check step uses the `Cause tag`: the same tag in runs.log twice becomes a lint rule, a learned check or a test, so the bug class cannot come back.
+6. **Build:** invoke the `deliver` skill (Skill tool) on `.scratch/fixes/<folder>/`, with `swarm` or `normal` if Kim gave one. /deliver writes the regression test first and runs it red: it must fail with the symptom, not on setup. A check that cannot be made to fail means the cause is wrong: /deliver blocks the ticket; come back to step 3 once with what it found, then report BLOCKED with what was tried.
+7. **Same bug twice:** /deliver's learned-check step uses the `Cause tag`: the same tag in runs.log twice becomes a lint rule, a learned check or a test, so the bug class cannot come back.
 8. **Never push.** The end report tells Kim what to test and to say "push it, I authorize".
 
 Bug and feature in one message: run /fix first (small, committed), then /feature, in that order.
@@ -1522,7 +1582,7 @@ Then: add each Critical and High finding to the Debt list in `.claude/memory/hea
 ~~~~markdown
 ---
 name: create-verification-skill
-description: Generate this repo's own verify-<app> skill - how to launch the app from an empty dev database, check it is healthy, drive features the way a user does, capture evidence (screenshots and the database rows that changed) and clean up - plus a feature map, then run it once end to end. Use for /create-verification-skill, when /ship or project-setup finds no verify-<app> skill, or when Kim asks for a repeatable way to prove the app works.
+description: Generate this repo's own verify-<app> skill - how to launch the app from an empty dev database, check it is healthy, drive features the way a user does, capture evidence (screenshots and the database rows that changed) and clean up - plus a feature map, then run it once end to end. Use for /create-verification-skill, when /deliver or project-setup finds no verify-<app> skill, or when Kim asks for a repeatable way to prove the app works.
 model: opus
 effort: medium
 ---
@@ -1536,8 +1596,8 @@ Adapted from pstack by Lauren Tan (cursor/plugins, MIT). Tests prove code paths;
 Answer from the code; ask Kim only what the code cannot show:
 - **Surface:** what a user touches (web UI, API, CLI). Pick the main one; note the rest.
 - **Launch:** the repo's own dev command (package scripts, README), port, local Supabase (`supabase start`, migrations, seed), the env files Playwright loads, the dev test account.
-- **Drive:** the existing harness first (Playwright config, e2e helpers, sign-in fixture). Stable handles only: roles, labels, test ids, routes. Never coordinates.
-- **Observe:** screenshots, response bodies, and the database state a feature changes (read through local Supabase with the test account, or `supabase db` read-only queries on the local stack).
+- **Drive:** the existing harness first (Playwright config, e2e helpers, sign-in fixture). Stable handles only: roles, labels, test ids, routes. Never coordinates. A CLI: build once (`cargo build`), then run the binary (`target/debug/<bin>`) with args and stdin in a temp dir. A Tauri app: Playwright on the web part's dev server with `invoke` mocked; the native window is a TEST IT YOURSELF item (no WebDriver for it on the Mac).
+- **Observe:** screenshots, response bodies, a CLI's stdout, exit code and output files, and the database state a feature changes (read through local Supabase with the test account, or `supabase db` read-only queries on the local stack).
 - **Isolate:** can two instances run at once (ports, data)? If not, say so: refuse to drive an instance someone else is using.
 If the app does not build or start as it is, fix that first (or report it exactly). A skill written against a broken base teaches wrong steps.
 
@@ -1561,21 +1621,21 @@ Run it once end to end: launch, doctor, drive one mapped feature, capture eviden
 
 ## 5. Commit and hand over
 
-Commit the skill folder as `chore: verify-<app> skill` (as Kim, no AI lines). Tell Kim in two lines what it covers, and that `/maintain-verification-skill` keeps the map current (/ship runs it for features it changes).
+Commit the skill folder as `chore: verify-<app> skill` (as Kim, no AI lines). Tell Kim in two lines what it covers, and that `/maintain-verification-skill` keeps the map current (/deliver runs it for features it changes).
 ~~~~
 
 `.claude/skills/maintain-verification-skill/SKILL.md (Lauren Tan, adapted: keeps verify-<app> honest, no PRs)`
 ~~~~markdown
 ---
 name: maintain-verification-skill
-description: Keep verify-<app> and its feature map honest after the app changed - read each mapped feature in the source, drive every one live once, fix drift in the skill only, and report real product bugs instead of hiding them. Use for /maintain-verification-skill, after /ship changes or adds a user-facing feature, or when a verify-<app> step no longer matches the app.
+description: Keep verify-<app> and its feature map honest after the app changed - read each mapped feature in the source, drive every one live once, fix drift in the skill only, and report real product bugs instead of hiding them. Use for /maintain-verification-skill, after /deliver changes or adds a user-facing feature, or when a verify-<app> step no longer matches the app.
 model: sonnet
 effort: medium
 ---
 
 # Maintain the verification skill
 
-Adapted from pstack by Lauren Tan (cursor/plugins, MIT). A feature map rots the moment the app changes. Scope: the whole map, or only the features Kim or /ship names.
+Adapted from pstack by Lauren Tan (cursor/plugins, MIT). A feature map rots the moment the app changes. Scope: the whole map, or only the features Kim or /deliver names.
 
 ## Outcomes (say which)
 - **clean:** every feature in scope was read in the source and driven live; nothing to change.
@@ -1598,7 +1658,7 @@ Edit only `.claude/skills/verify-<app>/` (its SKILL.md, features/ and helper scr
 ~~~~markdown
 ---
 name: reflect
-description: Turn the lessons of a finished, hard session into lasting improvements - checks first (lint, learned checks, tests), rule lines second, skill text last and only with Kim's OK. Use for /reflect, or when /ship ends with a ticket that needed 2+ fix rounds or got blocked.
+description: Turn the lessons of a finished, hard session into lasting improvements - checks first (lint, learned checks, tests), rule lines second, skill text last and only with Kim's OK. Use for /reflect, or when /deliver ends with a ticket that needed 2+ fix rounds or got blocked.
 model: sonnet
 effort: medium
 ---
@@ -1659,7 +1719,9 @@ Stay full and normal (never caveman):
     "defaultMode": "acceptEdits",
     "allow": [
       "Bash(git *)", "Bash(npm *)", "Bash(npx *)", "Bash(node *)", "Bash(pnpm *)", "Bash(yarn *)",
-      "Bash(supabase *)", "Bash(mkdir *)", "Bash(chmod +x *)", "Bash(printf *)", "Bash(echo *)"
+      "Bash(supabase *)", "Bash(mkdir *)", "Bash(chmod +x *)", "Bash(printf *)", "Bash(echo *)",
+      "Bash(cargo *)", "Bash(rustup component *)", "Bash(go *)", "Bash(gofmt *)", "Bash(python3 -m pytest *)", "Bash(pytest *)",
+      "Bash(ruff *)", "Bash(mypy *)", "Bash(uv run *)"
     ],
     "deny": ["Read(./.env)", "Read(./.env.*)", "Read(**/*.pem)", "Read(**/*.key)"]
   },
@@ -1692,14 +1754,17 @@ Stay full and normal (never caveman):
     "excludedCommands": ["git push *", "git fetch *", "git pull *", "supabase *", "docker *"],
     "filesystem": {
       "denyRead": ["~/.ssh", "~/.aws", "~/.config/gh", "~/.netrc", "~/.npmrc", "~/**/.env", "~/**/.env.*"],
-      "allowWrite": ["~/.npm", "~/Library/Caches/ms-playwright", "~/.cache/ms-playwright"]
+      "allowWrite": ["~/.npm", "~/Library/Caches/ms-playwright", "~/.cache/ms-playwright", "~/.cargo/registry", "~/.cargo/git",
+        "~/go/pkg/mod", "~/Library/Caches/go-build", "~/.cache/uv", "~/Library/Caches/pip"]
     },
     "network": {
       "allowLocalBinding": true,
       "allowedDomains": [
         "registry.npmjs.org", "*.npmjs.org", "registry.yarnpkg.com",
         "github.com", "*.github.com", "*.githubusercontent.com", "codeload.github.com",
-        "cdn.playwright.dev", "playwright.download.prss.microsoft.com", "playwright.azureedge.net"
+        "cdn.playwright.dev", "playwright.download.prss.microsoft.com", "playwright.azureedge.net",
+        "crates.io", "index.crates.io", "static.crates.io", "static.rust-lang.org",
+        "proxy.golang.org", "sum.golang.org", "pypi.org", "files.pythonhosted.org"
       ]
     }
   }
@@ -1711,7 +1776,9 @@ Stay full and normal (never caveman):
 `scripts/quality-ratchet.mjs`
 ~~~~js
 #!/usr/bin/env node
-// Quality ratchet (project-setup v3). The numbers may only get better.
+// Quality ratchet (project-setup v5.3). The numbers may only get better.
+// Languages: TypeScript/JavaScript (all metrics), Rust, Python and Go (size, suppressions, escape hatches, TODOs, untested
+// files; the import-graph rules are TypeScript only: Rust and Go forbid circular crates/packages by themselves).
 //   node scripts/quality-ratchet.mjs          pre-commit: fail if worse; if better, tighten the baseline and stage it
 //   node scripts/quality-ratchet.mjs --check  CI: fail if worse, never write
 //   node scripts/quality-ratchet.mjs --init   write the baseline from the current code
@@ -1724,32 +1791,55 @@ import { basename, extname, dirname, join, normalize } from 'node:path';
 const BASE = 'quality-baseline.json';
 const mode = process.argv.slice(2).find(a => a !== '--why') || '--commit';
 const cfg = existsSync(BASE) ? JSON.parse(readFileSync(BASE, 'utf8')) : {};
-const exclude = cfg.exclude || ['node_modules/', 'dist/', 'build/', '.next/', 'coverage/', 'public/', 'scripts/', 'e2e/', 'supabase/migrations/'];
+const exclude = cfg.exclude || ['node_modules/', 'dist/', 'build/', '.next/', 'coverage/', 'public/', 'scripts/', 'e2e/', 'supabase/migrations/', 'target/', '.venv/', 'venv/', 'vendor/'];
+const ALWAYS_OUT = ['node_modules/', 'target/', '.venv/', '__pycache__/', '.claude/', '.github/']; // build output, installed packages and kit files, even with an older exclude list
 const maxLines = cfg.maxLines || 200;
 
+const LANG = f => /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(f) ? 'ts' : f.endsWith('.rs') ? 'rust' : f.endsWith('.py') ? 'python' : f.endsWith('.go') ? 'go' : null;
 const files = execSync('git ls-files -co --exclude-standard', { encoding: 'utf8' }).split('\n')
-  .filter(f => /\.(ts|tsx|js|jsx|mjs|cjs)$/.test(f) && !f.endsWith('.d.ts') && !exclude.some(x => f.startsWith(x) || f.includes('/' + x)) && existsSync(f));
-const isTest = f => /\.(test|spec)\.[cm]?[jt]sx?$/.test(f) || f.includes('__tests__/');
-const isConfig = f => /(^|\/)[^/]*\.config\.[cm]?[jt]s$|(^|\/)\.[^/]+rc\.[cm]?js$/.test(f);
-const NO_TEST_NEEDED = /(^|\/)(page|layout|loading|error|not-found|template|default|route|middleware|index|types|constants)\.[cm]?[jt]sx?$/;
+  .filter(f => LANG(f) && !f.endsWith('.d.ts') && ![...exclude, ...ALWAYS_OUT].some(x => f.startsWith(x) || f.includes('/' + x)) && existsSync(f));
+const tsFiles = files.filter(f => LANG(f) === 'ts');
+const isTest = f => /\.(test|spec)\.[cm]?[jt]sx?$/.test(f) || f.includes('__tests__/')
+  || (LANG(f) === 'rust' && /(^|\/)(tests|benches)\//.test(f))
+  || (LANG(f) === 'python' && (/(^|\/)tests?\//.test(f) || /(^|\/)test_[^/]*\.py$|_test\.py$|(^|\/)conftest\.py$/.test(f)))
+  || (LANG(f) === 'go' && f.endsWith('_test.go'));
+const isConfig = f => /(^|\/)[^/]*\.config\.[cm]?[jt]s$|(^|\/)\.[^/]+rc\.[cm]?js$|(^|\/)(build\.rs|setup\.py|conftest\.py|noxfile\.py)$/.test(f);
+const NO_TEST_NEEDED = /(^|\/)(page|layout|loading|error|not-found|template|default|route|middleware|index|types|constants)\.[cm]?[jt]sx?$|(^|\/)(main|lib|mod|build)\.rs$|(^|\/)src\/bin\/|(^|\/)(__init__|__main__|main|types|constants|settings)\.py$|(^|\/)(main|doc|types|constants)\.go$/;
 
-const m = { bigFiles: 0, anyTypes: 0, suppressions: 0, todos: 0, untested: 0, archViolations: 0, cycles: 0 };
-const tests = new Set(files.filter(isTest).map(f => basename(f).replace(/\.(test|spec)\.[cm]?[jt]sx?$/, '')));
+// Per language: what counts as a suppression and as an escape hatch (code that turns the type checker or error handling off).
+const RULES = {
+  ts: { suppress: /@ts-ignore|@ts-nocheck|eslint-disable/g, escape: /:\s*any\b|<any>|\bas\s+any\b|any\[\]/g, todo: /\b(TODO|FIXME|HACK|XXX)\b/g },
+  rust: { suppress: /#!?\[allow\(|#\[cfg_attr\([^\]]*\ballow\(/g, escape: /\.unwrap\(\)|\.expect\(/g, unsafe: /\bunsafe\s*(\{|fn\b|impl\b)/g,
+    todo: /\b(TODO|FIXME|HACK|XXX)\b|\btodo!\(|\bunimplemented!\(/g },
+  python: { suppress: /#\s*noqa\b|#\s*type:\s*ignore|#\s*pragma:\s*no\s*cover|#\s*pyright:\s*ignore/g, escape: /(:|->)\s*Any\b|\bAny\]/g, todo: /\b(TODO|FIXME|HACK|XXX)\b/g },
+  go: { suppress: /\/\/\s*nolint\b/g, escape: /\binterface\s*\{\s*\}/g, todo: /\b(TODO|FIXME|HACK|XXX)\b/g },
+};
+const m = { bigFiles: 0, anyTypes: 0, suppressions: 0, todos: 0, untested: 0, archViolations: 0, cycles: 0, unwraps: 0, unsafeBlocks: 0 };
+const stem = f => { const b = basename(f).replace(/\.(test|spec)\.[cm]?[jt]sx?$/, ''); return (/\.(py|go)$/.test(b) ? b.replace(/^test_|_test(?=\.)/, '') : b).replace(/\.\w+$/, ''); };
+const tests = new Set(files.filter(isTest).map(stem));
+const rustTestText = files.filter(f => LANG(f) === 'rust' && isTest(f)).map(f => readFileSync(f, 'utf8')).join('\n');
 for (const f of files) {
-  const text = readFileSync(f, 'utf8');
-  if (/(^|\n)\s*\/\/\s*@generated\b/.test(text.slice(0, 400))) continue;
-  const test = isTest(f);
+  let text = readFileSync(f, 'utf8');
+  if (/(^|\n)\s*(\/\/|#)\s*@generated\b|Code generated .* DO NOT EDIT/.test(text.slice(0, 400))) continue;
+  const lang = LANG(f), r = RULES[lang], test = isTest(f);
+  // Rust keeps unit tests in the same file, under #[cfg(test)]: they count as test code, not as the file's size or its unwraps.
+  let inlineTests = false;
+  if (lang === 'rust') { const at = text.search(/#\[cfg\(test\)\]/); inlineTests = at >= 0 || /#\[test\]/.test(text); if (at >= 0) text = text.slice(0, at); }
   if (!test && !isConfig(f) && text.split('\n').length > maxLines) m.bigFiles++;
-  if (/\.tsx?$/.test(f)) m.anyTypes += (text.match(/:\s*any\b|<any>|\bas\s+any\b|any\[\]/g) || []).length;
-  m.suppressions += (text.match(/@ts-ignore|@ts-nocheck|eslint-disable/g) || []).length;
-  m.todos += (text.match(/\b(TODO|FIXME|HACK|XXX)\b/g) || []).length;
-  // Logic files need a unit test; UI files (.tsx/.jsx) are covered by the e2e checks.
-  if (!test && !isConfig(f) && !/\.[jt]sx$/.test(f) && !NO_TEST_NEEDED.test(f) && !tests.has(basename(f, extname(f)))) m.untested++;
+  if (lang === 'ts' ? /\.tsx?$/.test(f) : !test) m.anyTypes += lang === 'rust' ? 0 : (text.match(r.escape) || []).length;
+  if (lang === 'rust' && !test) { m.unwraps += (text.match(r.escape) || []).length; m.unsafeBlocks += (text.match(r.unsafe) || []).length; }
+  m.suppressions += (text.match(r.suppress) || []).length;
+  m.todos += (text.match(r.todo) || []).length;
+  // Logic files need a test; UI files (.tsx/.jsx) are covered by the e2e checks. Rust: a #[test] in the file, or a tests/ file
+  // that names the module.
+  if (test || isConfig(f) || /\.[jt]sx$/.test(f) || NO_TEST_NEEDED.test(f)) continue;
+  if (lang === 'rust') { if (!inlineTests && /\bfn\s+\w/.test(text) && !new RegExp(`\\b${stem(f)}\\b`).test(rustTestText)) m.untested++; }
+  else if (!tests.has(stem(f))) m.untested++;
 }
 // Architecture rules (import graph, any TypeScript version, no packages):
 //  feature internals are private (other features go through index), shared UI has no data access,
 //  app code never imports tests, and no circular imports.
-const fileSet = new Set(files);
+const fileSet = new Set(tsFiles);
 const EXT = ['', '.ts', '.tsx', '.js', '.jsx', '.mjs', '/index.ts', '/index.tsx', '/index.js'];
 const resolve = (from, spec) => {
   let base;
@@ -1762,7 +1852,7 @@ const resolve = (from, spec) => {
 const graph = new Map();
 const feat = f => (/^src\/features\/([^/]+)\//.exec(f) || [])[1];
 const archList = [];
-for (const f of files) {
+for (const f of tsFiles) {
   const text = readFileSync(f, 'utf8');
   const specs = [...text.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+)['"]([^'"]+)['"]/gm)].map(x => x[1]);
   const deps = [];
@@ -1789,13 +1879,14 @@ const strong = v => {
   if (low.get(v) === num.get(v)) { const comp = []; let w; do { w = st.pop(); on.delete(w); comp.push(w); } while (w !== v);
     if (comp.length > 1) { m.cycles += comp.length; archList.push(`cycle: ${comp.join(' -> ')}`); } }
 };
-for (const f of files) if (!num.has(f)) strong(f);
+for (const f of tsFiles) if (!num.has(f)) strong(f);
 if (process.argv.includes('--why')) console.log(archList.join('\n') || 'no architecture problems');
 
 const cov = 'coverage/coverage-summary.json';
 if (existsSync(cov)) { try { m.coverage = JSON.parse(readFileSync(cov, 'utf8')).total.lines.pct; } catch {} }
 const HIGHER_IS_BETTER = new Set(['coverage']);
-const LABEL = { bigFiles: `files over ${maxLines} lines`, anyTypes: '`any` types', suppressions: 'ts-ignore / eslint-disable',
+const LABEL = { bigFiles: `files over ${maxLines} lines`, anyTypes: '`any` types (Python Any, Go interface{})', suppressions: 'suppressions (ts-ignore, eslint-disable, #[allow], noqa, nolint)',
+  unwraps: 'Rust .unwrap() / .expect() outside tests', unsafeBlocks: 'Rust unsafe blocks',
   todos: 'TODO/FIXME', untested: 'source files without a test', archViolations: 'architecture rule breaks (run with --why)',
   cycles: 'files in import cycles (run with --why)', coverage: 'line coverage %' };
 
@@ -1898,70 +1989,182 @@ process.exit(failed ? 1 : 0);
 `scripts/check.mjs (every check in one plain command, so Claude never builds prompt-raising shell chains)`
 ~~~~js
 #!/usr/bin/env node
-// Check (project-setup v5.2): every check in ONE plain command, so Claude never builds long shell chains
+// Check (project-setup v5.3): every check in ONE plain command, so Claude never builds long shell chains
 // (variables, $(...), cd, ; chains make Claude Code ask for approval on every run).
-//   node scripts/check.mjs                 lint, typecheck, tests, build, learned checks (any failure fails); ratchet and
+//   node scripts/check.mjs                 format, lint, typecheck, tests, build, learned checks (any failure fails); ratchet and
 //                                          floor guard on the uncommitted changes (report only: the commit-msg hook blocks)
 //   node scripts/check.mjs --fast          same without build
-//   node scripts/check.mjs --fix           format/auto-fix first (biome or prettier, or the "format" script)
-//   node scripts/check.mjs --e2e [spec...] also Playwright (all specs, or the ones given): starts local Supabase if it is down,
-//                                          installs the matching browser, stops at the first failure when specs are given
-//   node scripts/check.mjs --only test     one step (lint|typecheck|test|build|learned|ratchet|floor|e2e)
+//   node scripts/check.mjs --fix           format/auto-fix first (biome, prettier or the "format" script; cargo fmt; ruff; gofmt)
+//   node scripts/check.mjs --e2e [spec...] also the end-to-end checks: Playwright (all specs, or the ones given; starts local
+//                                          Supabase if it is down, installs the matching browser) or checks.e2e from .claude/kit.json
+//   node scripts/check.mjs --only test     only these steps, comma list (format|lint|typecheck|test|build|learned|ratchet|floor|e2e);
+//                                          "test" also runs "test:rust" and the like in a repo with more than one stack
 //   node scripts/check.mjs --skip lint,build  leave steps out (the pre-push hook uses it for checks that were red before setup)
+//   node scripts/check.mjs --list          print the steps this repo has and where each comes from, run nothing
+// Stacks found by their manifest: package.json (its scripts), Cargo.toml or src-tauri/Cargo.toml (cargo fmt, clippy, test,
+// build), pyproject.toml or requirements.txt (ruff, mypy or pyright, pytest), go.mod (gofmt, go vet, go test, go build).
+// .claude/kit.json "checks" wins over what is found: {"test": "cargo test --features cli", "build": false, "e2e": "cargo test --test cli"}
+// (a string is split on spaces, no shell; an array is used as is; false drops the step; "test:rust" names one stack's step).
+// A full run with no format, lint, typecheck or test step FAILS: green with nothing checked is not green.
+// Set "checks": {"allowNone": true} only for a repo with no code (docs, config).
 // Prints one line per step; a failing step shows its last lines. Full logs: .trash/logs/<step>.log (gitignored; kept after commits, each run overwrites them).
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const argv = process.argv.slice(2);
 const flag = f => argv.includes(f);
-const only = flag('--only') ? argv[argv.indexOf('--only') + 1] : null;
-const skip = flag('--skip') ? String(argv[argv.indexOf('--skip') + 1] || '').split(',') : [];
-const specs = flag('--e2e') ? argv.slice(argv.indexOf('--e2e') + 1).filter((a, i, all) => !a.startsWith('--') && all[i - 1] !== '--only' && all[i - 1] !== '--skip') : [];
-const pkg = existsSync('package.json') ? JSON.parse(readFileSync('package.json', 'utf8')) : {};
-const scripts = pkg.scripts || {};
-const pm = existsSync('pnpm-lock.yaml') ? 'pnpm' : existsSync('yarn.lock') ? 'yarn' : 'npm';
-const run = name => [pm, 'run', name];
+const listArg = f => (flag(f) ? String(argv[argv.indexOf(f) + 1] || '').split(',').filter(Boolean) : []);
+const only = listArg('--only');
+const skip = listArg('--skip');
+const specs = flag('--e2e') ? argv.slice(argv.indexOf('--e2e') + 1).filter((a, i, all) => !a.startsWith('--') && !['--only', '--skip'].includes(all[i - 1])) : [];
+const readJson = f => { try { return JSON.parse(readFileSync(f, 'utf8')); } catch { return {}; } };
+const read = f => { try { return readFileSync(f, 'utf8'); } catch { return ''; } };
+const onPath = c => !spawnSync(c, ['--version'], { stdio: 'ignore' }).error;
+const custom = readJson('.claude/kit.json').checks || {};
+const words = v => (Array.isArray(v) ? v.map(String) : String(v).trim().split(/\s+/).filter(Boolean));
 
-const steps = [];
-if (flag('--fix')) {
-  if (scripts.format) steps.push(['fix', run('format')]);
-  else if (existsSync('biome.json') || existsSync('biome.jsonc')) steps.push(['fix', ['npx', '--no-install', 'biome', 'check', '--write', '.']]);
-  else if (pkg.devDependencies?.prettier || pkg.dependencies?.prettier) steps.push(['fix', ['npx', '--no-install', 'prettier', '--write', '.']]);
-}
-if (scripts.lint) steps.push(['lint', run('lint')]);
-if (scripts.typecheck) steps.push(['typecheck', run('typecheck')]);
-if (scripts.test) steps.push(['test', run('test')]);
-if (scripts.build && !flag('--fast')) steps.push(['build', run('build')]);
-if (existsSync('scripts/learned-checks.mjs')) steps.push(['learned', ['node', 'scripts/learned-checks.mjs']]);
-if (existsSync('scripts/quality-ratchet.mjs')) steps.push(['ratchet', ['node', 'scripts/quality-ratchet.mjs', '--check', '--why']]);
-if (existsSync('scripts/floor-guard.mjs')) steps.push(['floor', ['node', 'scripts/floor-guard.mjs', '--worktree']]);
-if (flag('--e2e') || only === 'e2e') {
-  if (existsSync('supabase/config.toml')) steps.push(['database', null]); // local stack only, never a linked or remote project
-  steps.push(['browser', ['npx', '--no-install', 'playwright', 'install', 'chromium']]); // matches the installed Playwright version
-  steps.push(['e2e', ['npx', '--no-install', 'playwright', 'test', '--reporter=line', ...(specs.length ? ['--max-failures=1'] : []), ...specs]]);
+// --- What this repo has, per stack. Each step: [name, command, from]. A command of null with a message = a step that fails
+// (a tool the stack needs is missing), so a missing tool is never read as a pass.
+const stacks = [];
+
+if (existsSync('package.json')) {
+  const pkg = readJson('package.json');
+  const scripts = pkg.scripts || {};
+  const pm = existsSync('pnpm-lock.yaml') ? 'pnpm' : existsSync('yarn.lock') ? 'yarn' : 'npm';
+  const run = name => [pm, 'run', name];
+  const s = { id: 'node', steps: [] };
+  if (scripts.format) s.fix = run('format');
+  else if (existsSync('biome.json') || existsSync('biome.jsonc')) s.fix = ['npx', '--no-install', 'biome', 'check', '--write', '.'];
+  else if (pkg.devDependencies?.prettier || pkg.dependencies?.prettier) s.fix = ['npx', '--no-install', 'prettier', '--write', '.'];
+  for (const n of ['lint', 'typecheck', 'test', 'build']) if (scripts[n]) s.steps.push([n, run(n), `package.json "${n}" script`]);
+  stacks.push(s);
 }
 
-const chosen = (only ? steps.filter(([n]) => n === only || (only === 'e2e' && (n === 'browser' || n === 'database'))) : steps).filter(([n]) => !skip.includes(n));
-if (!chosen.length) { console.log(only ? `check: no step "${only}" in this repo` : 'check: nothing to run'); process.exit(only ? 1 : 0); }
-mkdirSync('.trash/logs', { recursive: true });
-const exec = c => spawnSync(c[0], c.slice(1), { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, FORCE_COLOR: '0', CI: process.env.CI || '' } });
+// Rust: the root crate or workspace, else a Tauri app's src-tauri/ crate.
+const cargoManifest = existsSync('Cargo.toml') ? 'Cargo.toml' : existsSync('src-tauri/Cargo.toml') ? 'src-tauri/Cargo.toml' : null;
+if (cargoManifest) {
+  const s = { id: 'rust', steps: [] };
+  const mp = ['--manifest-path', cargoManifest];
+  if (!onPath('cargo')) s.steps.push(['test', null, 'cargo not found: install Rust with rustup (https://rustup.rs)']);
+  else {
+    const hasClippy = !spawnSync('cargo', ['clippy', '--version'], { stdio: 'ignore' }).status;
+    const hasFmt = !spawnSync('cargo', ['fmt', '--version'], { stdio: 'ignore' }).status;
+    s.fix = hasFmt ? ['cargo', 'fmt', '--all', ...mp] : null;
+    s.steps.push(['format', hasFmt ? ['cargo', 'fmt', '--all', ...mp, '--', '--check'] : null, hasFmt ? cargoManifest : 'rustfmt missing: rustup component add rustfmt']);
+    s.steps.push(['lint', hasClippy ? ['cargo', 'clippy', ...mp, '--workspace', '--all-targets', '--', '-D', 'warnings'] : null,
+      hasClippy ? `${cargoManifest} (clippy, warnings are errors)` : 'clippy missing: rustup component add clippy']);
+    s.steps.push(['test', ['cargo', 'test', ...mp, '--workspace'], cargoManifest]);
+    s.steps.push(['build', ['cargo', 'build', ...mp, '--workspace'], cargoManifest]);
+  }
+  stacks.push(s);
+}
+
+if (existsSync('pyproject.toml') || existsSync('requirements.txt') || existsSync('setup.py')) {
+  const s = { id: 'python', steps: [] };
+  const pyproject = read('pyproject.toml');
+  const prefix = existsSync('uv.lock') ? ['uv', 'run'] : existsSync('poetry.lock') ? ['poetry', 'run'] : [];
+  const tool = (bin, configured) => configured && (prefix.length || onPath(bin));
+  const deps = pyproject + read('requirements.txt') + read('requirements-dev.txt');
+  const ruff = tool('ruff', /\[tool\.ruff/.test(pyproject) || existsSync('ruff.toml') || existsSync('.ruff.toml') || /\bruff\b/.test(deps));
+  if (ruff) {
+    s.fix = [...prefix, 'ruff', 'format', '.'];
+    s.steps.push(['format', [...prefix, 'ruff', 'format', '--check', '.'], 'ruff']);
+    s.steps.push(['lint', [...prefix, 'ruff', 'check', '.'], 'ruff']);
+  }
+  if (tool('mypy', /\[tool\.mypy/.test(pyproject) || existsSync('mypy.ini'))) s.steps.push(['typecheck', [...prefix, 'mypy', '.'], 'mypy']);
+  else if (tool('pyright', /\[tool\.pyright/.test(pyproject) || existsSync('pyrightconfig.json'))) s.steps.push(['typecheck', [...prefix, 'pyright'], 'pyright']);
+  const hasTests = existsSync('tests') || existsSync('test') || /\[tool\.pytest/.test(pyproject) || existsSync('pytest.ini')
+    || readdirSync('.').some(f => /^test_.*\.py$|_test\.py$/.test(f));
+  if (hasTests) s.steps.push(['test', prefix.length ? [...prefix, 'pytest'] : ['python3', '-m', 'pytest'], 'pytest']);
+  stacks.push(s);
+}
+
+if (existsSync('go.mod')) {
+  const s = { id: 'go', steps: [] };
+  if (!onPath('go')) s.steps.push(['test', null, 'go not found: install Go (https://go.dev/dl)']);
+  else {
+    s.fix = ['gofmt', '-w', '.'];
+    s.steps.push(['format', ['gofmt', '-l', '.'], 'gofmt (lists unformatted files)', 'emptyOutput']);
+    s.steps.push(['lint', ['go', 'vet', './...'], 'go vet']);
+    s.steps.push(['test', ['go', 'test', './...'], 'go test']);
+    s.steps.push(['build', ['go', 'build', './...'], 'go build']);
+  }
+  stacks.push(s);
+}
+
+// One stack: plain step names (lint, test). Two or more (e.g. a Tauri app): the first keeps plain names, the others get a
+// suffix (test:rust), and "--only test" runs all of them.
+const ORDER = ['format', 'lint', 'typecheck', 'test', 'build'];
+let steps = [];
+stacks.forEach((s, i) => { for (const [n, c, from, mode] of s.steps) steps.push({ name: i === 0 ? n : `${n}:${s.id}`, base: n, cmd: c, from, mode }); });
+steps.sort((a, b) => ORDER.indexOf(a.base) - ORDER.indexOf(b.base));
+
+// .claude/kit.json "checks" wins.
+for (const [k, v] of Object.entries(custom)) {
+  if (k === 'allowNone' || k === 'e2e' || k === 'fix') continue;
+  steps = steps.filter(s => s.name !== k);
+  if (v === false || v == null) continue;
+  const base = k.split(':')[0];
+  steps.push({ name: k, base, cmd: words(v), from: '.claude/kit.json checks' });
+}
+steps.sort((a, b) => ORDER.indexOf(a.base) - ORDER.indexOf(b.base));
+
+const fixes = custom.fix ? [words(custom.fix)] : stacks.map(s => s.fix).filter(Boolean);
+const all = [];
+if (flag('--fix')) fixes.forEach((c, i) => all.push({ name: i ? `fix:${i + 1}` : 'fix', base: 'fix', cmd: c, from: 'auto-fix' }));
+for (const s of steps) if (!(flag('--fast') && s.base === 'build')) all.push(s);
+if (existsSync('scripts/learned-checks.mjs')) all.push({ name: 'learned', base: 'learned', cmd: ['node', 'scripts/learned-checks.mjs'], from: 'kit' });
+if (existsSync('scripts/quality-ratchet.mjs')) all.push({ name: 'ratchet', base: 'ratchet', cmd: ['node', 'scripts/quality-ratchet.mjs', '--check', '--why'], from: 'kit (report only)' });
+if (existsSync('scripts/floor-guard.mjs')) all.push({ name: 'floor', base: 'floor', cmd: ['node', 'scripts/floor-guard.mjs', '--worktree'], from: 'kit (report only here)' });
+const wantE2e = flag('--e2e') || only.includes('e2e');
+const playwright = ['playwright.config.ts', 'playwright.config.js', 'playwright.config.mjs'].some(existsSync);
+if (wantE2e) {
+  if (custom.e2e) all.push({ name: 'e2e', base: 'e2e', cmd: [...words(custom.e2e), ...specs], from: '.claude/kit.json checks.e2e' });
+  else if (playwright) {
+    if (existsSync('supabase/config.toml')) all.push({ name: 'database', base: 'e2e', cmd: 'database', from: 'local Supabase' }); // local stack only, never a linked or remote project
+    all.push({ name: 'browser', base: 'e2e', cmd: ['npx', '--no-install', 'playwright', 'install', 'chromium'], from: 'Playwright' }); // matches the installed Playwright version
+    all.push({ name: 'e2e', base: 'e2e', cmd: ['npx', '--no-install', 'playwright', 'test', '--reporter=line', ...(specs.length ? ['--max-failures=1'] : []), ...specs], from: 'Playwright' });
+  } else all.push({ name: 'e2e', base: 'e2e', cmd: null, from: 'no end-to-end checks here: add a Playwright config (web UI) or "e2e" to .claude/kit.json checks (e.g. "cargo test --test cli")' });
+}
+
+const real = steps.filter(s => ['format', 'lint', 'typecheck', 'test'].includes(s.base));
+if (flag('--list')) {
+  console.log(`stacks: ${stacks.map(s => s.id).join(', ') || 'none found'}`);
+  for (const s of all) console.log(`${s.name.padEnd(16)} ${s.cmd ? (s.cmd === 'database' ? 'supabase status / start' : s.cmd.join(' ')) : 'MISSING'}  (${s.from})`);
+  if (!real.length && !custom.allowNone) console.log('WARNING: no format, lint, typecheck or test step: a full run fails until .claude/kit.json "checks" names them');
+  process.exit(0);
+}
+
+const picked = s => only.some(o => s.name === o || s.base === o || s.name.startsWith(`${o}:`));
+const chosen = (only.length ? all.filter(picked) : all).filter(s => !skip.some(k => s.name === k || s.base === k));
 let failed = 0;
-for (const [name, cmd] of chosen) {
+if (!only.length && !real.length && !custom.allowNone) {
+  failed++;
+  console.log(`FAIL checks: no format, lint, typecheck or test step found (stacks: ${stacks.map(s => s.id).join(', ') || 'none'}). `
+    + 'Name the commands in .claude/kit.json "checks" (e.g. {"test": "cargo test"}), or set "allowNone": true for a repo with no code.');
+}
+if (!chosen.length) { console.log(only.length ? `check: no step "${only.join(',')}" in this repo (see --list)` : `check: ${failed ? 'nothing checked' : 'nothing to run'}`); process.exit(only.length || failed ? 1 : 0); }
+mkdirSync('.trash/logs', { recursive: true });
+const exec = c => spawnSync(c[0], c.slice(1), { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, FORCE_COLOR: '0', CARGO_TERM_COLOR: 'never', CI: process.env.CI || '' } });
+for (const { name, cmd, from, mode } of chosen) {
   const t = Date.now();
   let r;
-  if (name === 'database') { // local Supabase must be up for e2e: start it when `supabase status` says it is not
+  if (!cmd) { failed++; console.log(`FAIL ${name}: ${from}`); continue; }
+  if (cmd === 'database') { // local Supabase must be up for e2e: start it when `supabase status` says it is not
     const bin = spawnSync('supabase', ['--version']).error ? ['npx', '--no-install', 'supabase'] : ['supabase'];
     r = exec([...bin, 'status']);
     if (r.status !== 0) r = exec([...bin, 'start']);
   } else r = exec(cmd);
-  const out = `${r.stdout || ''}${r.stderr || ''}`;
-  writeFileSync(`.trash/logs/${name}.log`, out);
+  if (r.error && r.status == null) r = { status: 127, stdout: '', stderr: `${cmd[0]}: ${r.error.code === 'ENOENT' ? 'command not found' : r.error.message}` };
+  if (mode === 'emptyOutput' && r.status === 0 && String(r.stdout).trim()) r = { status: 1, stdout: `not formatted:\n${r.stdout}`, stderr: '' };
+  const out = `${r.stdout || ''}${r.stderr || ''}`.replace(/\x1b\[[0-9;]*m/g, '');
+  writeFileSync(`.trash/logs/${name.replace(/[^\w.-]/g, '_')}.log`, out);
   const secs = ((Date.now() - t) / 1000).toFixed(1);
   if (r.status === 0) { console.log(`PASS ${name} (${secs}s)`); continue; }
-  if (name === 'ratchet') { console.log(`NOTE ratchet (report only, ${secs}s): a tracked number got worse; /ship puts it on the Debt list. Details: .trash/logs/ratchet.log`); continue; }
+  if (name === 'ratchet') { console.log(`NOTE ratchet (report only, ${secs}s): a tracked number got worse; /deliver puts it on the Debt list. Details: .trash/logs/ratchet.log`); continue; }
   if (name === 'floor' && r.status === 1) { console.log(`NOTE floor (${secs}s): the change lowers the bar; the commit will be refused unless it is fixed or has a Floor-exception line:`); console.log(out.trim().split('\n').slice(0, 12).map(l => `  ${l}`).join('\n')); continue; }
   failed++;
-  console.log(`FAIL ${name} (exit ${r.status ?? r.signal}, ${secs}s) - last lines, full log .trash/logs/${name}.log:`);
+  console.log(`FAIL ${name} (exit ${r.status ?? r.signal}, ${secs}s) - last lines, full log .trash/logs/${name.replace(/[^\w.-]/g, '_')}.log:`);
   console.log(out.trim().split('\n').slice(-15).map(l => `  ${l}`).join('\n'));
   if (name === 'browser' || name === 'database') break; // no browser or database, no e2e
 }
@@ -2024,15 +2227,15 @@ if (problems.length)
 `scripts/swarm.mjs (swarm mode: gets a worker's worktree ready, brings its changes home, removes it)`
 ~~~~js
 #!/usr/bin/env node
-// Swarm (project-setup v5.2). /ship builds up to 5 tickets at once, each worker in its own git worktree.
+// Swarm (project-setup v5.2). /deliver builds up to 5 tickets at once, each worker in its own git worktree.
 //   node scripts/swarm.mjs prep                       run by a worker inside its worktree: links node_modules from the
 //                                                      main folder (no second install), so typecheck and unit tests run
 //   node scripts/swarm.mjs collect <worktree> [--check <file>]...
-//                                                      run by /ship in the main folder: copies the worker's changes
+//                                                      run by /deliver in the main folder: copies the worker's changes
 //                                                      (committed or not) into the main folder as unstaged edits, leaves each
-//                                                      --check file as /ship wrote it, then removes the worktree and its branch.
+//                                                      --check file as /deliver wrote it, then removes the worktree and its branch.
 //                                                      A patch that does not apply cleanly changes nothing: it is saved to
-//                                                      .trash/swarm/ and the worktree is kept, so /ship rebuilds that ticket alone.
+//                                                      .trash/swarm/ and the worktree is kept, so /deliver rebuilds that ticket alone.
 //   node scripts/swarm.mjs usage                      usage guard, run before each batch: reads the plan usage the status line
 //                                                      saved (.claude/state/usage.json) and prints the batch size to use:
 //                                                      "batch 1" (normal) when the 5-hour use is at 80%+ or the weekly at 90%+,
@@ -2229,16 +2432,17 @@ console.log(`learned checks: ${data.rules.length} rule(s), all clean`);
 `scripts/floor-guard.mjs (commit-msg: refuses a commit that silences a check or makes a test easier, unless it names an exception)`
 ~~~~js
 #!/usr/bin/env node
-// Floor guard (project-setup v5.2; after Addy Osmani's constraint-driven development). Catches the cheap roads to green
+// Floor guard (project-setup v5.3; after Addy Osmani's constraint-driven development). Catches the cheap roads to green
 // in the change itself: a silenced checker, a test made easier, a weakened config, unfinished work.
 //   node scripts/floor-guard.mjs <commit-msg-file>   .husky/commit-msg, after commit-identity: checks the staged diff, blocks
 //   node scripts/floor-guard.mjs --worktree          check.mjs: checks uncommitted changes (tracked and new files), reports only
 // A finding that is right on purpose (a library bug, generated code) passes with one line in the commit message:
 //   Floor-exception: <rule> <path> - <reason>
-// Allowed exceptions are printed loudly, stay in git history, and show up in /ship's end report and the daily report.
+// Allowed exceptions are printed loudly, stay in git history, and show up in /deliver's end report and the daily report.
 // Exit 0 = clean (or every finding has an exception), 1 = floor violation, 2 = could not run (never read as clean).
 // Regex-shallow on purpose: it catches the shortcuts agents take, not a person hiding a change.
 import { readFileSync, existsSync } from 'node:fs';
+// Rules cover TypeScript/JavaScript, Rust, Python and Go.
 import { execFileSync } from 'node:child_process';
 
 const argv = process.argv.slice(2);
@@ -2292,19 +2496,21 @@ for (const line of diff.split('\n')) {
   else if (line.startsWith('-')) removed.push({ file, text: line.slice(1) });
 }
 
-const SKIP = /(^|\/)(\.claude|\.scratch|\.trash|docs|node_modules)\/|\.(md|mdx|txt|lock|snap)$|(^|\/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|CHANGELOG[^/]*)$|(^|\/)\.husky\/|(^|\/)scripts\/((quality-ratchet|commit-identity|secret-scan|check|trash|swarm|learned-checks|push-gate|floor-guard|report)\.mjs|learned-checks\.json)$/; // kit files: the guard protects them
+const SKIP = /(^|\/)(\.claude|\.scratch|\.trash|docs|node_modules|target)\/|\.(md|mdx|txt|lock|snap)$|(^|\/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|Cargo\.lock|go\.sum|CHANGELOG[^/]*)$|(^|\/)\.(husky|githooks)\/|(^|\/)scripts\/((quality-ratchet|commit-identity|secret-scan|check|trash|swarm|learned-checks|push-gate|floor-guard|report)\.mjs|learned-checks\.json)$/; // kit files: the guard protects them
 const CODE = /\.(m?[jt]sx?|c[jt]s|py|go|rs|rb|java|kts?|swift|php|cs|vue|svelte|astro|sql|sh)$/;
-const CONFIG = /(^|\/)(tsconfig[^/]*\.json|jsconfig\.json|\.?eslint[^/]*|biome\.jsonc?|\.oxlintrc[^/]*|(vitest|vite|jest|playwright)\.config\.[^/]+|package\.json)$/;
-const isTest = f => /(^|\/)(e2e|tests?|__tests__)\/|\.(test|spec)\.|_test\.|(^|\/)test_/.test(f);
-const scope = f => !SKIP.test(f) && (CODE.test(f) || CONFIG.test(f));
+const CONFIG = /(^|\/)(tsconfig[^/]*\.json|jsconfig\.json|\.?eslint[^/]*|biome\.jsonc?|\.oxlintrc[^/]*|(vitest|vite|jest|playwright)\.config\.[^/]+|package\.json|Cargo\.toml|\.?clippy\.toml|\.?rustfmt\.toml|\.cargo\/config(\.toml)?|pyproject\.toml|setup\.cfg|mypy\.ini|\.?ruff\.toml|pytest\.ini|tox\.ini|pyrightconfig\.json|\.golangci\.ya?ml|\.claude\/kit\.json)$/;
+// Rust keeps unit tests inside the source file (#[cfg(test)]): such a file counts as a test file too.
+const rustInline = f => f.endsWith('.rs') && existsSync(f) && /#\[(cfg\(test\)|test)\]/.test(readFileSync(f, 'utf8'));
+const isTest = f => /(^|\/)(e2e|tests?|__tests__|benches)\/|\.(test|spec)\.|_test\.|(^|\/)test_/.test(f) || rustInline(f);
+const scope = f => f === '.claude/kit.json' || (!SKIP.test(f) && (CODE.test(f) || CONFIG.test(f)));
 
 const findings = [];
 const flag = (rule, f, text) => findings.push({ rule, file: f, text: String(text).trim().slice(0, 120) });
 
-const SILENCE = /@ts-(ignore|nocheck|expect-error)|eslint-disable|biome-ignore|oxlint-disable|#\s*noqa|#\s*type:\s*ignore|(istanbul|c8|v8)\s+ignore|nosemgrep|gitleaks:allow|\bas\s+any\b/;
-const EASIER = /\b(it|test|describe|suite)\.(skip|only|todo|fixme)\s*\(|\bx(it|describe|test)\s*\(|\btest\.fail\s*\(|@pytest\.mark\.(skip|xfail)|\bt\.Skip\(/;
+const SILENCE = /@ts-(ignore|nocheck|expect-error)|eslint-disable|biome-ignore|oxlint-disable|#\s*noqa|#\s*type:\s*ignore|#\s*pyright:\s*ignore|#\s*pragma:\s*no\s*cover|(istanbul|c8|v8)\s+ignore|nosemgrep|gitleaks:allow|\bas\s+any\b|#!?\[allow\(|#\[cfg_attr\([^\]]*\ballow\(|#\[expect\(|\/\/\s*nolint\b/;
+const EASIER = /\b(it|test|describe|suite)\.(skip|only|todo|fixme)\s*\(|\bx(it|describe|test)\s*\(|\btest\.fail\s*\(|@pytest\.mark\.(skip|xfail)|\bpytest\.skip\(|\bt\.(Skip|SkipNow)\(|#\[ignore\b|#\[cfg\(any\(\)\)\]/;
 const STUB = /throw\s+new\s+\w*Error\s*\(\s*['"`][^'"`]*not\s+(yet\s+)?implemented|\bunimplemented!|\btodo!\(|\bpass\s*#\s*(stub|todo)|catch\s*(\([^)]*\))?\s*\{\s*\}/i;
-const LOOSE = /"strict"\s*:\s*false|"(noImplicitAny|strictNullChecks|noUncheckedIndexedAccess|noUnusedLocals|noUnusedParameters|noFallthroughCasesInSwitch)"\s*:\s*false|:\s*\[?\s*["'](off)["']|"level"\s*:\s*"off"|\bretries\s*:\s*[1-9]|passWithNoTests|\|\|\s*(true|exit 0)\b|--no-verify/;
+const LOOSE = /\b(warnings|unsafe_code|clippy::\w+|missing_docs|unused\w*|dead_code)\s*=\s*("allow"|\{[^}]*level\s*=\s*"allow")|-A\s*warnings|--cap-lints|\b(ignore_errors|ignore_missing_imports)\s*=\s*[Tt]rue|\bstrict\s*=\s*(false|False)|\bdisable-all\s*:\s*true|"allowNone"\s*:\s*true|"(test|lint|typecheck|format)[\w:]*"\s*:\s*false|"strict"\s*:\s*false|"(noImplicitAny|strictNullChecks|noUncheckedIndexedAccess|noUnusedLocals|noUnusedParameters|noFallthroughCasesInSwitch)"\s*:\s*false|:\s*\[?\s*["'](off)["']|"level"\s*:\s*"off"|\bretries\s*:\s*[1-9]|passWithNoTests|\|\|\s*(true|exit 0)\b|--no-verify/;
 
 const byFile = new Map();
 for (const a of added) if (scope(a.file)) (byFile.get(a.file) || byFile.set(a.file, []).get(a.file)).push(a.text);
@@ -2319,7 +2525,7 @@ for (const [f, lines] of byFile) {
   });
 }
 for (const f of deleted) if (scope(f) && isTest(f)) flag('test-deleted', f, 'test file deleted (a rename is fine)');
-const ASSERT = /\b(expect|assert\w*)\s*\(|\.should\b|\bt\.(is|deepEqual|true|false|throws)\(/g;
+const ASSERT = /\b(expect|assert\w*)!?\s*\(|\.should\b|\bt\.(is|deepEqual|true|false|throws|Error|Errorf|Fatal|Fatalf)\(|\b(assert|require)\.\w+\(|^\s*assert\s+[^=(]|\bdebug_assert\w*!\(/gm;
 const count = list => list.reduce((n, l) => n + (l.text.match(ASSERT) || []).length, 0);
 for (const f of files) {
   if (deleted.has(f) || !scope(f) || !isTest(f)) continue;
@@ -2567,7 +2773,7 @@ process.exit(0);
 
 `playwright.config.ts`
 ~~~~ts
-// Playwright (project-setup v3.5): e2e checks written by /ship live in e2e/. Uses fake test data only.
+// Playwright (project-setup v3.5): e2e checks written by /deliver live in e2e/. Uses fake test data only.
 import { defineConfig, devices } from '@playwright/test'
 
 // Test logins (dev test account) come from these files when present, so a plain `npx playwright test` works.
@@ -2600,7 +2806,8 @@ export default defineConfig({
 
 `.github/workflows/ci.yml`
 ~~~~yaml
-# CI (project-setup v3). Adapt the install line and scripts to the repo's package manager.
+# CI (project-setup v5.3). One job per stack: DELETE the jobs for stacks this repo does not have (node, rust, e2e) and adapt
+# commands to its real scripts. No job-level `if: hashFiles(...)`: GitHub does not offer hashFiles there, so it breaks the file.
 # No pull requests in this workflow: Kim pushes to main, the pre-push hook checks first, CI re-checks after.
 name: CI
 on:
@@ -2612,9 +2819,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  checks:
+  kit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -2622,28 +2829,72 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Kim is the only author (no other identity, no AI attribution lines)
         if: ${{ github.event_name == 'push' && hashFiles('scripts/commit-identity.mjs') != '' }}
         run: |
           BEFORE='${{ github.event.before }}'
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then git rev-parse -q --verify HEAD~1 >/dev/null && RANGE='HEAD~1..HEAD' || RANGE='HEAD'; else RANGE="$BEFORE..HEAD"; fi
           node scripts/commit-identity.mjs --range "$RANGE"
-      - run: npm ci
-      - run: npm run lint --if-present
-      - run: npm run typecheck --if-present
-      - run: npm test --if-present
-      - run: npm run build --if-present
       - name: Learned checks (mistakes made twice)
         if: ${{ hashFiles('scripts/learned-checks.mjs') != '' }}
         run: node scripts/learned-checks.mjs
       - name: Quality ratchet (report only)
         continue-on-error: true
         run: node scripts/quality-ratchet.mjs --check
+  node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npm run typecheck --if-present
+      - run: npm test --if-present
+      - run: npm run build --if-present
       - name: Security audit (production dependencies)
         run: npm audit --omit=dev --audit-level=high
+  rust:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the crate (root, or a Tauri app's src-tauri)
+        run: if [ -f Cargo.toml ]; then echo "CRATE_DIR=." >> "$GITHUB_ENV"; else echo "CRATE_DIR=src-tauri" >> "$GITHUB_ENV"; fi
+      - name: Tauri system libraries
+        if: ${{ hashFiles('src-tauri/tauri.conf.json') != '' }}
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Tauri web part (generate_context! needs its build output)
+        if: ${{ hashFiles('src-tauri/tauri.conf.json') != '' && hashFiles('package.json') != '' }}
+        run: npm ci && npm run build --if-present
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ env.CRATE_DIR }}
+      - name: Format
+        working-directory: ${{ env.CRATE_DIR }}
+        run: cargo fmt --all -- --check
+      - name: Clippy (warnings are errors)
+        working-directory: ${{ env.CRATE_DIR }}
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Tests
+        working-directory: ${{ env.CRATE_DIR }}
+        run: cargo test --workspace
+      - name: Build
+        working-directory: ${{ env.CRATE_DIR }}
+        run: cargo build --workspace
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit
+      - name: Security audit (RustSec advisories)
+        working-directory: ${{ env.CRATE_DIR }}
+        run: cargo audit
   e2e:
-    if: ${{ hashFiles('playwright.config.*') != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -2667,7 +2918,7 @@ jobs:
 
 ~~~~markdown
 # Codebase health
-Read before planning, ticketing and building. /ship updates it. Kim may edit any line.
+Read before planning, ticketing and building. /deliver updates it. Kim may edit any line.
 
 ## Target architecture
 <!-- 10-15 lines, written by /project-setup from the real code; the grill updates it when Kim decides. -->
@@ -2690,7 +2941,7 @@ Read before planning, ticketing and building. /ship updates it. Kim may edit any
 |---|---|---|---|
 
 ## Health log
-<!-- /ship appends: date · feature · ratchet report -->
+<!-- /deliver appends: date · feature · ratchet report -->
 ~~~~
 
 ## CLAUDE.md template
@@ -2712,6 +2963,7 @@ src/components/ui/  shared dumb UI (no data access)
 src/lib/            db client, auth, helpers used in 2+ places
 e2e/                Playwright checks (one per ticket) - the regression suite
 (Adapt to the real layout; never invent folders that do not exist.)
+<!-- Rust instead: src/main.rs (or lib.rs) thin: parse args and wire modules · src/<feature>.rs or src/<feature>/mod.rs: one module per feature, `pub` items are its interface · src/error.rs: the error type · tests/: integration tests (tests/cli.rs runs the binary) · benches/ if any. Rust Rules lines instead of the web ones: parse outside data into types once at the boundary (serde, clap); errors are Result and `?`, no unwrap/expect outside tests and main; clippy clean with warnings as errors; `unsafe` only with a `// SAFETY:` note and Kim's OK; no new crate without saying why in the end report. -->
 
 ## Rules
 - Reuse before create: check `.claude/memory/codemap.md` and search before adding a component or helper.
@@ -2733,8 +2985,8 @@ From Lauren Tan's pstack principles and Matt Pocock's skills.
 - Fix the root cause, not the place the symptom showed. Two fixes built on one idea failed: test the idea itself.
 - No comments that explain what the code does. Keep only license headers, a quirk of an outside library or platform, public API docs, and issue links for outside constraints. Code that needs a comment gets renamed or reshaped.
 - Done means proven on the real thing (verify-ticket, verify-<app>), never "it compiles" or "tests pass except".
-- Framework code follows the official docs for the installed version (package.json), not memory; workers list their sources and what they could not verify.
-- Never silence a check to get green (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`, empty `catch`, a config switched off): the floor guard refuses the commit unless it carries `Floor-exception: <rule> <path> - <reason>`.
+- Framework code follows the official docs for the installed version (package.json, Cargo.toml / Cargo.lock, pyproject, go.mod), not memory; workers list their sources and what they could not verify.
+- Never silence a check to get green (`@ts-ignore`, `eslint-disable`, `as any`, `.skip`, empty `catch`, `#[allow]`, `#[ignore]`, `noqa`, a config switched off): the floor guard refuses the commit unless it carries `Floor-exception: <rule> <path> - <reason>`.
 - The same mistake twice becomes a check that fails the build (see Learned rules), not more text.
 - Reversible work: decide and proceed. Stop only for what cannot be undone.
 
@@ -2747,7 +2999,7 @@ From Lauren Tan's pstack principles and Matt Pocock's skills.
 ## Shell commands
 - One plain command per call, from the project root, with relative paths. No `cd <path> &&`, `$VAR`, `$(...)` or `;`/`&&` chains: Claude Code stops to ask Kim about those.
 - Delete with `node scripts/trash.mjs <path>...`, never rm. Build and test output goes at once, anything else to `.trash/` until the next commit; no need to ask Kim.
-- Checks: `node scripts/check.mjs` (`--fast`, `--fix`, `--e2e [spec]`, `--only <step>`); full output in `.trash/logs/`. Scratch files: `.trash/tmp/`.
+- Checks: `node scripts/check.mjs` (`--fast`, `--fix`, `--e2e [spec]`, `--only <step,step>`, `--list`); full output in `.trash/logs/`. Missing or wrong commands go in `.claude/kit.json` `checks`, never around the script. Scratch files: `.trash/tmp/`.
 - A multi-step command needed twice becomes a script under `scripts/`.
 
 ## Git (Kim is the only author on GitHub)
@@ -2768,11 +3020,11 @@ Session: Sonnet, medium effort. Pick ONE route that fits the task (not the cheap
 | Risky (auth, RLS, personal data, payments, migrations, secrets) or 6+ files | `worker-opus` |
 | Risky and the approach is unclear | `worker-opus-high` |
 | Change across modules or to the architecture | `worker-fable` |
-| Swarm mode on (`.claude/kit.json`) and 2+ independent jobs, or one big job that splits by module | Up to `maxAgents` workers at once, each on its tier and in its own worktree, as the ship skill's Swarm mode section says |
+| Swarm mode on (`.claude/kit.json`) and 2+ independent jobs, or one big job that splits by module | Up to `maxAgents` workers at once, each on its tier and in its own worktree, as the deliver skill's Swarm mode section says |
 | Bug, error or regression | Start the `fix` skill (cause, failing test first, fix, commit); only the cause, no fix: `.claude/skills/diagnosing-bugs/SKILL.md` |
 | "What happened today", status, report | Start the `report` skill |
 | New feature, or anything not yet specified | Start the `feature` skill (it grills Kim first, then builds by itself; huge: `/wayfinder` first) |
-| Build tickets | Run the `ship` skill on `.scratch/<feature>/` |
+| Build tickets | Run the `deliver` skill on `.scratch/<feature>/` |
 
 After a worker: re-run its checks and `node scripts/check.mjs --fast`, review non-trivial code with `.claude/skills/code-review/SKILL.md`, commit with explicit paths. Move up one tier only after an unexpected failure. Fable not available (no access, needs credits, Kim declines): run `node .claude/tools/apply-models.mjs --no-fable`, redo the step on Opus, tell Kim in one line. Switch the session model only at a natural break (after `/clear`).
 
@@ -2788,8 +3040,8 @@ GLOSSARY.md is the source. Use its exact words in code, tests and UI. Decisions:
 
 ## How we work
 1. Sonnet medium, caveman replies, one feature per session. Same kit on the Mac, Windows and in cloud sessions.
-2. New feature: /feature <idea>. Kim answers the grill; spec, tickets and /ship run by themselves (huge: /wayfinder first).
-3. /ship per ticket: check first (red), the tier the task needs (several at once in swarm mode), green on the real app, review, commit as Kim; then notes, verify map, learned checks.
+2. New feature: /feature <idea>. Kim answers the grill; spec, tickets and /deliver run by themselves (huge: /wayfinder first).
+3. /deliver per ticket: check first (red), the tier the task needs (several at once in swarm mode), green on the real app, review, commit as Kim; then notes, verify map, learned checks.
 4. Bug: /fix <bug>. Anything else: just ask. End of the day: /report. A reply did not land: /wait-what.
 5. Kim tests the TEST IT YOURSELF list, then says "push it, I authorize". CI re-checks, Vercel deploys.
 6. Any time: /improve-codebase-architecture, /reflect after a hard session, /maintain-verification-skill, /webperf.
