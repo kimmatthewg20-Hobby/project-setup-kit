@@ -35,3 +35,9 @@
    - Settings (step 19, last): merge the new `settings.local.json` `excludedCommands` entry `git -C <KIT> pull --ff-only` with KIT's absolute path (Mac only), so Step 0's pull can use Kim's GitHub login outside the sandbox.
    - `session.js` now says at session start when this repo's kit is behind the installed one; nothing to do.
    - Tell Kim in one line, once: the kit now lives in `~/.claude/skills/project-setup` (a clone); the old account copy in claude.ai Settings → Skills can be deleted.
+
+## v6.1 (hooks find Node, guard fails closed)
+
+   - `node KIT/tools/install.mjs .` adds `.claude/hooks/run.sh` (the hook launcher).
+   - Settings (step 19, last): in `.claude/settings.json`, every kit hook command (`statusLine`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `PreToolUse`) changes from `node "$CLAUDE_PROJECT_DIR/.claude/hooks/<hook>.js"` to `sh "$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh" <hook>.js` (keep `--end` and the guard's `|| exit 2`), as in `KIT/files/merge/settings.json`. Leave Kim's own hooks alone.
+   - Why, in one line to Kim: Claude Code can start hooks without Node on the PATH (nvm, fnm, Volta, an app opened from the Dock); the launcher finds Node anyway, and with no Node at all the guard blocks every tool and says how to fix it.

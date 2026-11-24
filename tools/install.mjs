@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// project-setup v6: copy the kit files into a repo, byte for byte. The skill runs it from the repo root:
+// project-setup v6.1: copy the kit files into a repo, byte for byte. The skill runs it from the repo root:
 //   node <KIT>/tools/install.mjs .                     copy every file in files/kit/ (new or changed ones only)
 //   node <KIT>/tools/install.mjs . --dry-run           list what would change, write nothing
 //   node <KIT>/tools/install.mjs . --only a,b          only paths under these prefixes (e.g. .claude/hooks,scripts)
@@ -25,7 +25,7 @@ const version = readFileSync(join(KIT, 'VERSION'), 'utf8').trim();
 const only = listArg('--only').map(p => p.replace(/\\/g, '/').replace(/\/$/, ''));
 const dry = flag('--dry-run'), check = flag('--check');
 const KEEP_IF_PRESENT = new Set(['scripts/learned-checks.json']);
-const EXECUTABLE = /^\.claude\/hooks\/[^/]+\.js$/;
+const EXECUTABLE = /^\.claude\/hooks\/[^/]+\.(js|sh)$/;
 
 const walk = dir => readdirSync(dir).flatMap(n => { const p = join(dir, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const files = walk(SRC).map(p => relative(SRC, p).split(sep).join('/')).sort()

@@ -1,9 +1,9 @@
 ---
 name: "project-setup"
-description: "Set up, update, check or explain one repo's toolkit (v6.0), any stack (TypeScript, Rust, Python, Go): Matt Pocock and Lauren Tan way of working plus Addy Osmani's guards, /feature and /fix flows from grill or bug report to commits, right-sized router plus Haiku Explore, normal or swarm mode (up to 5 agents in worktrees, drops to normal when plan usage runs low), /deliver with real-app checks, a verify-app skill and a fresh-eyes doubt review on risky tickets, floor guard against silenced checks, session lock, daily /report, /webperf, secret scan, Kim as only git author, no PRs, push on 'I authorize', kit guide, Mac and cloud."
+description: "Set up, update, check or explain one repo's toolkit (v6.1), any stack (TypeScript, Rust, Python, Go): Matt Pocock and Lauren Tan way of working plus Addy Osmani's guards, /feature and /fix flows from grill or bug report to commits, right-sized router plus Haiku Explore, normal or swarm mode (up to 5 agents in worktrees, drops to normal when plan usage runs low), /deliver with real-app checks, a verify-app skill and a fresh-eyes doubt review on risky tickets, floor guard against silenced checks, session lock, daily /report, /webperf, secret scan, Kim as only git author, no PRs, push on 'I authorize', kit guide, Mac and cloud."
 ---
 
-# Project setup v6.0
+# Project setup v6.1
 
 One command gives a repo the toolkit. Everything installs INTO the repo; nothing global except this skill. The kit's files live next to this file and are copied exactly (never re-typed); plus Matt Pocock's skills; no orchestrator code. The way of working is Matt Pocock's (grill, spec, tickets, test-first build, two-axis review) with Lauren Tan's finish (proven on the real app, a mistake made twice becomes a check) and three guards from Addy Osmani (a fresh-eyes doubt review of risky tickets, framework code checked against the official docs, a floor guard that refuses silenced checks), fully automatic after Kim answers the grill or reports a bug.
 

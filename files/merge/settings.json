@@ -6,7 +6,7 @@
   "fallbackModel": ["opus", "sonnet"],
   "attribution": { "commit": "", "pr": "", "sessionUrl": false },
   "includeCoAuthoredBy": false,
-  "statusLine": { "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/statusline.js\"" },
+  "statusLine": { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" statusline.js" },
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [
@@ -19,18 +19,18 @@
   },
   "hooks": {
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session.js\"", "timeout": 600 }] }
+      { "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" session.js", "timeout": 600 }] }
     ],
     "SessionEnd": [
-      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session.js\" --end" }] }
+      { "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" session.js --end" }] }
     ],
     "UserPromptSubmit": [
-      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/prompt.js\"" }] }
+      { "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" prompt.js" }] }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit|Read|Grep|Glob",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard.js\" || exit 2" }]
+        "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" guard.js || exit 2" }]
       }
     ]
   }

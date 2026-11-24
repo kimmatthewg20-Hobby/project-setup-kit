@@ -1,4 +1,4 @@
-// project-setup v6.0: prove the guard, prompt, session and status line hooks. Runs in a throwaway copy, so it never touches this
+// project-setup v6.1: prove the guard, prompt, session and status line hooks. Runs in a throwaway copy, so it never touches this
 // session's real unlock (.claude/state/auth/). Setup, Update and Check run it; it must print "all N passed".
 //   node .claude/tools/test-hooks.mjs            run every case
 //   node .claude/tools/test-hooks.mjs --verbose  also list passing cases
@@ -33,6 +33,24 @@ for (const h of ['guard.js', 'prompt.js', 'session.js', 'statusline.js']) { // a
 }
 let pass = 0; const fails = [];
 const expect = (label, got, want) => { if (got === want) { pass++; if (verbose) console.log(`ok   ${label}`); } else fails.push(`FAIL ${label} (got ${got}, want ${want})`); };
+
+// Launcher (run.sh): finds Node, and with no Node the guard fails CLOSED while the other hooks only warn.
+if (existsSync(join(dir, '.claude/hooks/run.sh'))) {
+  const viaRun = (hook, node, args = [], input = { session_id: 'sr', tool_name: 'Bash', tool_input: { command: 'git status' } }) =>
+    spawnSync('sh', [join(dir, '.claude/hooks/run.sh'), hook, ...args], { input: JSON.stringify(input), env: { ...env, KIT_HOOK_NODE: node }, encoding: 'utf8', cwd: dir });
+  const real = process.execPath, none = join(dir, 'no-node-here');
+  expect('launcher: guard runs through run.sh', viaRun('guard.js', real).status, 0);
+  expect('launcher: guard still blocks through run.sh', viaRun('guard.js', real, [], { session_id: 'sr', tool_name: 'Bash', tool_input: { command: 'git push --force' } }).status, 2);
+  const closed = viaRun('guard.js', none);
+  expect('launcher: no Node = guard blocks (fail closed)', closed.status, 2);
+  expect('launcher: no Node = guard says how to fix', /Node\.js was not found/.test(closed.stderr), true);
+  const p = viaRun('prompt.js', none, [], { session_id: 'sr', prompt: 'hi' });
+  expect('launcher: no Node = prompt warns, does not block', p.status === 0 && /brew install node/.test(p.stdout), true);
+  expect('launcher: no Node = session start warns', /Node\.js was not found/.test(viaRun('session.js', none, [], { session_id: 'sr' }).stdout), true);
+  expect('launcher: no Node = session end quiet', viaRun('session.js', none, ['--end'], { session_id: 'sr' }).stdout, '');
+  expect('launcher: no Node = status line shows it', /Node missing/.test(viaRun('statusline.js', none, [], {}).stdout), true);
+  expect('launcher: hooks run with a bare PATH', spawnSync('sh', [join(dir, '.claude/hooks/run.sh'), 'guard.js'], { input: JSON.stringify({ session_id: 'sr', tool_name: 'Bash', tool_input: { command: 'git status' } }), env: { ...env, PATH: '/usr/bin:/bin', KIT_HOOK_NODE: '' }, encoding: 'utf8', cwd: dir }).status === 0 || !existsSync('/usr/bin/node') && !existsSync('/usr/local/bin/node') && !existsSync('/opt/homebrew/bin/node'), true);
+}
 const allow = (s, c) => expect(`allow: ${c}`, bash(s, c), 0);
 const deny = (s, c) => expect(`block: ${c}`, bash(s, c), 2);
 

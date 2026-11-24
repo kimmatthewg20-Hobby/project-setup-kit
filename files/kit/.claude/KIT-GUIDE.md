@@ -1,4 +1,4 @@
-# Claude Code kit guide (project-setup v6.0)
+# Claude Code kit guide (project-setup v6.1)
 
 What this repo's Claude Code kit does, how to use it, and where its limits are. Ask "what can the kit do?" or run `/project-setup help` to see this guide. Claude answers from this file and checks it against the repo's real state.
 
@@ -141,6 +141,7 @@ What this repo's Claude Code kit does, how to use it, and where its limits are. 
 | Problem | Fix |
 |---|---|
 | Setup or update says the unlock was lost | Another Claude session on this repo cleared it (kits before v5.1). Pause the other session, then send the command again with `I authorize` at the end |
+| "Kit hooks cannot run: Node.js was not found" | Install Node (`brew install node` or the nodejs.org installer), check `which node`, restart `claude`. Until then the guard blocks every tool on purpose |
 | "BLOCKED by project guard" on something harmless | Tell Claude to stop; run `/project-setup check`. A wrong block is a bug in the skill |
 | "Push gate:" when Claude pushes | You did not say "I authorize" in the last 30 minutes. Say it, or push yourself |
 | "Push gate:" listing commits by someone else or AI lines | Those commits stay local; fix them with section 11 before pushing |

@@ -219,6 +219,7 @@ Just ask: "rename the button", "why is this slow", "where is X used". The router
 | `Kit v… here, v… installed` | `/project-setup update` in that repo |
 | The kit pull failed | Check your GitHub login; `git -C ~/.claude/skills/project-setup pull` by hand |
 | Session lock warning | Close the other Claude session on this folder, or say `go anyway` |
+| `Kit hooks cannot run: Node.js was not found` (or `node: command not found` from a hook) | `brew install node` (or the nodejs.org installer), check `which node`, restart `claude`. Until then the guard blocks every tool on purpose |
 | Anything else | `/project-setup help` or `/project-setup check` |
 
 ---
@@ -237,3 +238,4 @@ Just ask: "rename the button", "why is this slow", "where is X used". The router
 | v5.2 | Doubt review, floor guard, `/fix`, `/report`, `/webperf`, session lock, usage guard |
 | v5.3 | Any stack (Rust, Python, Go), `/ship` renamed `/deliver`, CI fix |
 | v6.0 | Split layout: short `SKILL.md` + exact `files/`, install by clone, self-updating, repo version notice |
+| v6.1 | Hook launcher finds Node (nvm, fnm, Volta, Dock); no Node = guard blocks every tool with a fix message |
