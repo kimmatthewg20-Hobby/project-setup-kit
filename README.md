@@ -4,7 +4,7 @@ Kim's Claude Code toolkit. One command gives a repo the whole way of working: Ma
 
 Kim is the only author on GitHub, there are no pull requests, and nothing is pushed without "I authorize".
 
-> **Layout note.** This README describes the split layout (v6): a short `SKILL.md` that copies exact files from `files/`, installed by cloning this repo. Versions up to v5.3 were a single `SKILL.md` saved to the Claude account.
+> **Layout (v6).** A short `SKILL.md` (the steps), `files/kit/` (every kit file, copied exactly by `tools/install.mjs`), `files/merge/` (settings, CI and Playwright files merged with the repo's own), `templates/` (CLAUDE.md, health.md), `docs/update-notes.md` (clean-up for older kits) and `VERSION`. Installed by cloning this repo. Versions up to v5.3 were one long `SKILL.md` saved to the Claude account.
 
 ---
 
@@ -226,8 +226,8 @@ Just ask: "rename the button", "why is this slow", "where is X used". The router
 ## 8. Releasing a new kit version (maintainer)
 
 1. Change `SKILL.md`, `files/` or `docs/` in this repo.
-2. Run the tests: the hook suite (`node files/.claude/tools/test-hooks.mjs` in a fake repo) and the fake Rust and TypeScript repos.
-3. Bump the version in `SKILL.md` and `files/.claude/kit.json`, commit as Kim, tag `vX.Y`.
+2. Run the tests in a throwaway git repo: `node <kit>/tools/install.mjs .`, then `node .claude/tools/test-hooks.mjs` (all must pass) and `node scripts/check.mjs --list`; repeat in a fake Rust repo and a fake TypeScript repo.
+3. Bump `VERSION` (and the title in `SKILL.md`), add a section to `docs/update-notes.md` if old repos need clean-up, commit as Kim, tag `vX.Y`.
 4. Push with "I authorize". Every computer picks it up on its next `/project-setup` run; each repo updates when you run `update` there.
 
 ## Versions
@@ -236,4 +236,4 @@ Just ask: "rename the button", "why is this slow", "where is X used". The router
 |---|---|
 | v5.2 | Doubt review, floor guard, `/fix`, `/report`, `/webperf`, session lock, usage guard |
 | v5.3 | Any stack (Rust, Python, Go), `/ship` renamed `/deliver`, CI fix |
-| v6 (planned) | Split layout: short `SKILL.md` + exact `files/`, install by clone, self-updating |
+| v6.0 | Split layout: short `SKILL.md` + exact `files/`, install by clone, self-updating, repo version notice |

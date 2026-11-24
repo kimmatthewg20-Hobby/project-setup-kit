@@ -1,0 +1,22 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": ["git push *", "git fetch *", "git pull *", "supabase *", "docker *", "git -C <KIT> pull --ff-only"],
+    "filesystem": {
+      "denyRead": ["~/.ssh", "~/.aws", "~/.config/gh", "~/.netrc", "~/.npmrc", "~/**/.env", "~/**/.env.*"],
+      "allowWrite": ["~/.npm", "~/Library/Caches/ms-playwright", "~/.cache/ms-playwright", "~/.cargo/registry", "~/.cargo/git",
+        "~/go/pkg/mod", "~/Library/Caches/go-build", "~/.cache/uv", "~/Library/Caches/pip"]
+    },
+    "network": {
+      "allowLocalBinding": true,
+      "allowedDomains": [
+        "registry.npmjs.org", "*.npmjs.org", "registry.yarnpkg.com",
+        "github.com", "*.github.com", "*.githubusercontent.com", "codeload.github.com",
+        "cdn.playwright.dev", "playwright.download.prss.microsoft.com", "playwright.azureedge.net",
+        "crates.io", "index.crates.io", "static.crates.io", "static.rust-lang.org",
+        "proxy.golang.org", "sum.golang.org", "pypi.org", "files.pythonhosted.org"
+      ]
+    }
+  }
+}
